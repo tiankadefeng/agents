@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: agents
+  ai:
+    deepseek:
+      api-key: ${DEEPSEEK_API_KEY}              # D-18: shell 环境变量加载（用户已在 ~/.base_profile 配置）
+      chat:
+        model: deepseek-reasoner                 # D-05: R1, Phase 1 默认（LLM-04 要求 reasoning_content 非空）
+        # temperature: 不设置 - D-09 reasoner 对 temperature 不敏感
+        # max-tokens: 不设置 - D-10 用模型默认（教学场景 prompt 短，自然输出长度有限）
+    retry:
+      max-attempts: 3                            # D-07: 重试 3 次（含首次，LLM-05）
+      backoff:
+        initial-interval: 2000ms                 # D-11 + LLM-05: 首次退避 2s（嵌套形式，Pitfall #6 规避）
+        multiplier: 2                            # 指数退避 2s -> 4s -> 8s
+        max-interval: 10s                        # 单次退避上限
+      # retry-on: 默认涵盖 429 + 5xx（SpringAiRetryAutoConfiguration 按状态码分类，无需显式配置）
+
+server:
+  port: 8080
+  compression:
+    enabled: false                               # D-04: SSE 不压缩，避免 Tomcat output buffer 缓冲
+
+spring.mvc.async.request-timeout: -1             # D-04: SSE 不超时（Phase 1 流式 600s 上限由 DeepSeek 端控制，D-11）
+
+logging:
+  level:
+    org.springframework.ai: INFO                 # 观察 retry + DeepSeek 调用
+    com.agents: DEBUG                            # 项目自身调试日志
