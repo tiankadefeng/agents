@@ -86,9 +86,14 @@ function handleExampleClick(question: string) {
 }
 
 .example-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: var(--design-spacing-sm);
+}
+
+.example-buttons :deep(.el-button) {
+  width: 100%;
+  white-space: normal;
+  word-break: break-word;
 }
 </style>
