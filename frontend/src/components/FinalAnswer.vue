@@ -55,10 +55,11 @@ const statusText = computed(() => {
 
 <style scoped>
 .final-answer {
-  background: #fff;
-  border-left: 3px solid #409eff;
-  border-radius: 4px;
-  padding: 16px;
+  background: var(--design-bg-white);
+  border: 1px solid var(--design-border-color);
+  border-left: 3px solid var(--design-color-primary);
+  border-radius: var(--design-radius-base);
+  padding: 20px;
   min-height: 120px;
 }
 
@@ -67,12 +68,14 @@ const statusText = computed(() => {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--design-divider);
 }
 
 .title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #303133;
+  font-size: var(--design-font-size-lg);
+  font-weight: var(--design-font-weight-bold);
+  color: var(--design-text-primary);
 }
 
 .status-indicator {
@@ -82,8 +85,8 @@ const statusText = computed(() => {
 }
 
 .status-text {
-  font-size: 12px;
-  color: #909399;
+  font-size: var(--design-font-size-xs);
+  color: var(--design-text-secondary);
 }
 
 .streaming-dot {
@@ -95,7 +98,7 @@ const statusText = computed(() => {
 }
 
 .streaming-dot.answering {
-  background-color: #409eff;
+  background-color: var(--design-color-primary);
 }
 
 @keyframes pulse {
@@ -111,17 +114,17 @@ const statusText = computed(() => {
 }
 
 .answer-content {
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.5;
-  color: #303133;
+  font-size: var(--design-font-size-base);
+  font-weight: var(--design-font-weight-regular);
+  line-height: var(--design-line-height-base);
+  color: var(--design-text-primary);
   white-space: pre-wrap;
   word-wrap: break-word;
   margin: 0;
 }
 
 .empty-state {
-  font-size: 14px;
-  color: #909399;
+  font-size: var(--design-font-size-base);
+  color: var(--design-text-secondary);
 }
 </style>

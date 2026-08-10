@@ -75,10 +75,10 @@ function handleChange(val: string[]) {
 
 <style scoped>
 .reasoning-panel {
-  background: #fdf6ec;
-  border-left: 3px solid #e6a23c;
-  border-radius: 4px;
-  margin-bottom: 24px;
+  background: #FFF6E6;
+  border-left: 3px solid var(--design-color-warning);
+  border-radius: var(--design-radius-base);
+  margin-bottom: 0;
   padding: 0 16px;
 }
 
@@ -90,14 +90,14 @@ function handleChange(val: string[]) {
 }
 
 .title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #303133;
+  font-size: var(--design-font-size-lg);
+  font-weight: var(--design-font-weight-bold);
+  color: var(--design-text-primary);
 }
 
 .subtitle {
-  font-size: 12px;
-  color: #909399;
+  font-size: var(--design-font-size-xs);
+  color: var(--design-text-secondary);
   flex: 1;
 }
 
@@ -108,8 +108,8 @@ function handleChange(val: string[]) {
 }
 
 .status-text {
-  font-size: 12px;
-  color: #909399;
+  font-size: var(--design-font-size-xs);
+  color: var(--design-text-secondary);
 }
 
 .streaming-dot {
@@ -121,7 +121,7 @@ function handleChange(val: string[]) {
 }
 
 .streaming-dot.thinking {
-  background-color: #e6a23c;
+  background-color: var(--design-color-warning);
 }
 
 @keyframes pulse {
@@ -137,10 +137,10 @@ function handleChange(val: string[]) {
 }
 
 .reasoning-content {
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.5;
-  color: #303133;
+  font-size: var(--design-font-size-base);
+  font-weight: var(--design-font-weight-regular);
+  line-height: var(--design-line-height-base);
+  color: var(--design-text-regular);
   white-space: pre-wrap;
   word-wrap: break-word;
   max-height: 400px;
@@ -150,8 +150,8 @@ function handleChange(val: string[]) {
 }
 
 .empty-state {
-  font-size: 14px;
-  color: #909399;
+  font-size: var(--design-font-size-base);
+  color: var(--design-text-secondary);
   padding: 12px 0;
 }
 </style>

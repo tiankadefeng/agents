@@ -86,27 +86,38 @@ function handleSelectExample(example: string) {
 
 <style scoped>
 .question-input {
-  margin-bottom: 24px;
+  margin-bottom: 0;
 }
 
 .input-label {
   display: block;
-  font-size: 14px;
-  color: #303133;
-  margin-bottom: 8px;
+  font-size: var(--design-font-size-base);
+  color: var(--design-text-primary);
+  font-weight: 500;
+  margin-bottom: var(--design-spacing-sm);
 }
 
 .example-questions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: var(--design-spacing-sm);
+  margin-bottom: var(--design-spacing-sm);
 }
 
 .button-row {
   display: flex;
-  gap: 8px;
+  gap: var(--design-spacing-sm);
   justify-content: flex-end;
   margin-top: 12px;
+}
+
+.question-input :deep(.el-textarea__inner:focus) {
+  border-color: var(--design-color-primary);
+}
+
+.question-input :deep(.el-button--primary) {
+  background-color: var(--design-color-primary);
+  border-color: var(--design-color-primary);
+  border-radius: var(--design-radius-base);
 }
 </style>
