@@ -31,6 +31,7 @@ let streamAborted = false
 // D-04: Pattern switch aborts SSE, does NOT clear state
 watch(selectedPatternId, () => {
   if (status.value === 'thinking' || status.value === 'answering') {
+    streamAborted = true
     abortController?.abort()
     status.value = 'aborted'
   }
