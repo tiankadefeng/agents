@@ -1,0 +1,10 @@
+/* ==========================================================================
+   Global Styles — Unified Entry Point
+   Import order matters: variables must load first so all subsequent files
+   can reference the design tokens.
+   ========================================================================== */
+
+@import './variables.css';
+@import './reset.css';
+@import './typography.css';
+@import './layout.css';
