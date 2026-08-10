@@ -167,11 +167,11 @@ function clear() {
 
 .app-header {
   height: 56px;
-  background: #fff;
-  border-bottom: 1px solid #e4e7ed;
+  background: var(--design-bg-white);
+  border-bottom: 1px solid var(--design-divider);
   display: flex;
   align-items: center;
-  padding: 0 24px;
+  padding: 0 var(--design-spacing-lg);
 }
 
 .header-title {
@@ -183,29 +183,37 @@ function clear() {
 .title-bar {
   width: 4px;
   height: 24px;
-  background: #409eff;
+  background: var(--design-color-primary);
   border-radius: 2px;
 }
 
 .app-header h1 {
-  font-size: 18px;
-  font-weight: 600;
-  color: #303133;
+  font-size: var(--design-font-size-lg);
+  font-weight: var(--design-font-weight-bold);
+  color: var(--design-text-primary);
   margin: 0;
 }
 
 .app-aside {
-  background: #f5f7fa;
-  padding: 16px;
+  background: var(--design-bg-page);
+  padding: 20px;
 }
 
 .app-main {
-  background: #fff;
-  padding: 24px 32px;
+  background: var(--design-bg-page);
+  padding: 20px;
 }
 
 .main-content {
-  max-width: 960px;
+  max-width: 1184px;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--design-spacing-md);
+  width: 100%;
+}
+
+.main-content :deep(.el-alert) {
+  margin-bottom: 0;
 }
 </style>
