@@ -55,17 +55,17 @@ function handleExampleClick(question: string) {
 
 <style scoped>
 .pattern-description-card {
-  background: #F5F7FA;
-  border: 1px solid #E4E7ED;
-  border-radius: 4px;
+  background: var(--design-bg-white);
+  border: 1px solid var(--design-border-color);
+  border-radius: var(--design-radius-base);
   padding: 16px;
-  margin-top: 16px;
+  margin-top: 0;
 }
 
 .card-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #303133;
+  font-size: var(--design-font-size-md);
+  font-weight: var(--design-font-weight-bold);
+  color: var(--design-text-primary);
   margin-bottom: 12px;
 }
 
@@ -74,20 +74,20 @@ function handleExampleClick(question: string) {
 }
 
 .section-label {
-  font-size: 12px;
-  color: #909399;
-  margin-bottom: 4px;
+  font-size: var(--design-font-size-xs);
+  color: var(--design-text-secondary);
+  margin-bottom: var(--design-spacing-xs);
 }
 
 .section-content {
-  font-size: 14px;
-  color: #303133;
-  line-height: 1.5;
+  font-size: var(--design-font-size-base);
+  color: var(--design-text-regular);
+  line-height: var(--design-line-height-base);
 }
 
 .example-buttons {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--design-spacing-sm);
 }
 </style>

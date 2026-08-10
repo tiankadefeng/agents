@@ -121,25 +121,25 @@ onMounted(async () => {
 
 <style scoped>
 .pattern-selector {
-  color: #303133;
+  color: var(--design-text-primary);
 }
 
 .selector-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #303133;
+  font-size: var(--design-font-size-lg);
+  font-weight: var(--design-font-weight-bold);
+  color: var(--design-text-primary);
 }
 
 .selector-subtitle {
-  font-size: 12px;
-  color: #909399;
-  margin-top: 4px;
-  margin-bottom: 16px;
+  font-size: var(--design-font-size-xs);
+  color: var(--design-text-secondary);
+  margin-top: var(--design-spacing-xs);
+  margin-bottom: var(--design-spacing-md);
 }
 
 .loading-state {
-  font-size: 14px;
-  color: #909399;
+  font-size: var(--design-font-size-base);
+  color: var(--design-text-secondary);
   text-align: center;
   padding: 24px 0;
 }
@@ -147,14 +147,14 @@ onMounted(async () => {
 .pattern-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--design-spacing-sm);
 }
 
 .pattern-item {
-  padding: 8px 12px;
-  border: 1px solid #e4e7ed;
-  border-radius: 4px;
-  background: #fff;
+  padding: 12px 16px;
+  border: 1px solid var(--design-border-color);
+  border-radius: var(--design-radius-base);
+  background: var(--design-bg-white);
   transition: all 0.2s;
 }
 
@@ -164,7 +164,7 @@ onMounted(async () => {
 }
 
 .pattern-item.disabled:hover {
-  background: #fff;
+  background: var(--design-bg-white);
 }
 
 .pattern-item.enabled {
@@ -172,23 +172,23 @@ onMounted(async () => {
 }
 
 .pattern-item.enabled:hover {
-  background: #ecf5ff;
-  border-color: #409eff;
+  background: var(--design-color-primary-light-9);
+  border-color: var(--design-color-primary);
 }
 
 .pattern-item.selected {
-  background: #409eff;
-  border-color: #409eff;
+  background: var(--design-color-primary);
+  border-color: var(--design-color-primary);
 }
 
 .pattern-item.selected .pattern-name,
 .pattern-item.selected .pattern-tag {
-  color: #fff;
+  color: var(--design-bg-white);
 }
 
 .pattern-item.selected .pattern-tag.green {
   background: rgba(255, 255, 255, 0.2);
-  color: #fff;
+  color: var(--design-bg-white);
 }
 
 .pattern-header {
@@ -198,33 +198,33 @@ onMounted(async () => {
 }
 
 .pattern-name {
-  font-size: 14px;
-  color: #303133;
+  font-size: var(--design-font-size-base);
+  color: var(--design-text-primary);
 }
 
 .selected-icon {
-  color: #fff;
+  color: var(--design-bg-white);
 }
 
 .pattern-tag {
-  font-size: 12px;
-  margin-top: 4px;
+  font-size: var(--design-font-size-xs);
+  margin-top: var(--design-spacing-xs);
   padding: 2px 6px;
-  border-radius: 3px;
+  border-radius: var(--design-radius-sm);
   display: inline-block;
 }
 
 .pattern-tag.green {
-  color: #67c23a;
-  background: rgba(103, 194, 58, 0.1);
+  color: var(--design-color-success);
+  background: rgba(21, 172, 12, 0.1);
 }
 
 .pattern-tag.amber {
-  color: #e6a23c;
-  background: rgba(230, 162, 60, 0.1);
+  color: var(--design-color-warning);
+  background: rgba(250, 178, 21, 0.1);
 }
 
 .pattern-description-card {
-  margin-top: 16px;
+  margin-top: var(--design-spacing-md);
 }
 </style>
