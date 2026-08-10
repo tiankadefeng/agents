@@ -88,6 +88,7 @@ function handleExampleClick(question: string) {
 .example-buttons {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--design-spacing-sm);
 }
 </style>
