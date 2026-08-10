@@ -1,0 +1,53 @@
+/* ==========================================================================
+   Typography System
+   Text color, size, and weight utility classes.
+   All values reference design tokens from variables.css via var().
+   ========================================================================== */
+
+/* --- Text Colors --- */
+.text-primary {
+  color: var(--design-text-primary);
+}
+
+.text-regular {
+  color: var(--design-text-regular);
+}
+
+.text-secondary {
+  color: var(--design-text-secondary);
+}
+
+.text-placeholder {
+  color: var(--design-text-placeholder);
+}
+
+/* --- Font Sizes --- */
+.text-xs {
+  font-size: var(--design-font-size-xs);
+  line-height: var(--design-line-height-xs);
+}
+
+.text-base {
+  font-size: var(--design-font-size-base);
+  line-height: var(--design-line-height-base);
+}
+
+.text-md {
+  font-size: var(--design-font-size-md);
+  line-height: var(--design-line-height-md);
+}
+
+.text-lg {
+  font-size: var(--design-font-size-lg);
+  line-height: var(--design-line-height-lg);
+}
+
+.text-xl {
+  font-size: var(--design-font-size-xl);
+  line-height: var(--design-line-height-xl);
+}
+
+/* --- Font Weight --- */
+.text-bold {
+  font-weight: var(--design-font-weight-bold);
+}

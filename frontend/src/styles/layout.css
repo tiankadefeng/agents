@@ -1,0 +1,51 @@
+/* ==========================================================================
+   Layout Utilities
+   Flex/grid helpers and gap utilities.
+   All values reference design tokens from variables.css via var().
+   ========================================================================== */
+
+/* --- Flex Display --- */
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* --- Gap Utilities --- */
+.gap-xs {
+  gap: var(--design-spacing-xs);
+}
+
+.gap-sm {
+  gap: var(--design-spacing-sm);
+}
+
+.gap-md {
+  gap: var(--design-spacing-md);
+}
+
+.gap-lg {
+  gap: var(--design-spacing-lg);
+}
+
+/* --- Content Container --- */
+.content-container {
+  max-width: 1184px;
+  margin: 0 auto;
+  width: 100%;
+}

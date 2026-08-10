@@ -1,0 +1,39 @@
+/* ==========================================================================
+   Global Reset & Base Styles
+   All values reference design tokens from variables.css via var().
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  height: 100%;
+  font-family: var(--design-font-family);
+  font-size: var(--design-font-size-base);
+  color: var(--design-text-primary);
+  background-color: var(--design-bg-page);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#app {
+  height: 100%;
+}
+
+a {
+  color: var(--design-color-primary);
+  text-decoration: none;
+}
+
+pre {
+  font-family: inherit;
+}
