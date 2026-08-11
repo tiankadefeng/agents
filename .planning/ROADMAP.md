@@ -144,8 +144,16 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — 3 内置工具类（WeatherTool/CalculatorTool/TimeTool）+ 单元测试
+**Wave 1**
+
+- [x] 04-01-PLAN.md — 3 内置工具类（WeatherTool/CalculatorTool/TimeTool）+ 单元测试
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 04-02-PLAN.md — ToolRegistry 聚合 + NoSuchToolException + DTO records + ToolRegistryTest
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 04-03-PLAN.md — ToolController RESTful 端点 + WebTestClient 集成测试
 
 ### Phase 5: ReAct Pattern
@@ -264,7 +272,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 4 -> 5 -> 6 -> 7 -> 8 -> 
 | 2. Agent Abstraction | 0/5 | Planned | - |
 | 3. CoT Pattern | 5/5 | Complete    | 2026-08-06 |
 | 03.1. ui-polish | 3/3 | Complete    | 2026-08-10 |
-| 4. Tool Layer | 0/0 | Not started | - |
+| 4. Tool Layer | 1/3 | In Progress|  |
 | 5. ReAct Pattern | 0/0 | Not started | - |
 | 6. Self-Ask Pattern | 0/0 | Not started | - |
 | 7. Plan-and-Execute Pattern | 0/0 | Not started | - |
