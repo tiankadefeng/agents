@@ -108,7 +108,7 @@ public class ToolRegistry {
         if ("cot".equals(patternId)) {
             return List.of();
         }
-        return all;
+        return List.copyOf(all);
     }
 
     /**

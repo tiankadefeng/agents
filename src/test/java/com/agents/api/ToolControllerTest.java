@@ -52,14 +52,12 @@ class ToolControllerTest {
             .expectBody()
             // 验证 3 个工具
             .jsonPath("$.length()").isEqualTo(3)
-            // 验证工具名
-            .jsonPath("[0].name").isEqualTo("weather")
-            .jsonPath("[1].name").isEqualTo("calculator")
-            .jsonPath("[2].name").isEqualTo("time")
-            // 验证 description 非空
-            .jsonPath("[0].description").isNotEmpty()
+            // 使用 filter 断言避免索引顺序依赖（WR-03）
+            .jsonPath("[?(@.name=='weather')].description").isNotEmpty()
+            .jsonPath("[?(@.name=='calculator')].description").isNotEmpty()
+            .jsonPath("[?(@.name=='time')].description").isNotEmpty()
             // 验证 inputSchema 存在（JSON schema 字符串）
-            .jsonPath("[0].inputSchema").isNotEmpty();
+            .jsonPath("[?(@.name=='weather')].inputSchema").isNotEmpty();
     }
 
     @Test

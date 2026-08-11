@@ -104,8 +104,10 @@ public class ToolController {
             String jsonArgs = objectMapper.writeValueAsString(req.arguments());
             String result = tc.call(jsonArgs);
             return ResponseEntity.ok(result);
-        } catch (RuntimeException ex) {
+        } catch (Exception ex) {
             // T-4-05: 工具执行失败返回 500 + 仅 message，无 stacktrace
+            // 捕获 Exception 而非 RuntimeException：ObjectMapper.writeValueAsString 抛出
+            // 受检 JacksonException（extends IOException），RuntimeException 范围不够。
             return ResponseEntity.status(500)
                 .body("{\"error\":\"工具执行失败：" + ex.getMessage() + "\"}");
         }
