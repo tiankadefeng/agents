@@ -49,6 +49,17 @@
             <artifactId>spring-ai-starter-model-deepseek</artifactId>
         </dependency>
 
+        <!-- CalculatorTool: exp4j 0.4.8 - safe math expression evaluation.
+             Uses Dijkstra Shunting Yard algorithm (pure math: no variable assignment, no string ops, no I/O, no reflection).
+             ~46KB, no transitive deps. Apache License 2.0 (NOT MIT as stated in CONTEXT.md D-04 -
+             clarified in 04-RESEARCH.md §Package Legitimacy Audit; both OSI-approved and compatible with project's Apache 2.0).
+             9+ years stable, 13 historical versions. Explicit <version> because not managed by Spring AI BOM or Boot parent. -->
+        <dependency>
+            <groupId>net.objecthunter</groupId>
+            <artifactId>exp4j</artifactId>
+            <version>0.4.8</version>
+        </dependency>
+
         <!-- reactor-core comes transitively via the DeepSeek starter above; do NOT add the reactive webflux starter
              (it would trigger WebFlux auto-config and conflict with MVC).
              MCP client starter deferred to Phase 11. -->
