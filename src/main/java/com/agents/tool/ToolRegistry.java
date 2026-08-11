@@ -1,5 +1,8 @@
 package com.agents.tool;
 
+import com.agents.tool.builtin.CalculatorTool;
+import com.agents.tool.builtin.TimeTool;
+import com.agents.tool.builtin.WeatherTool;
 import org.springframework.ai.support.ToolCallbacks;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbackProvider;
@@ -39,28 +42,31 @@ import java.util.stream.Stream;
 @Component
 public class ToolRegistry {
 
+    /** Phase 4 内置工具 Bean 列表（通过 {@code ToolCallbacks.from()} 反射提取 {@code @Tool} 方法）。 */
+    private static final List<Object> BUILTIN_TOOL_BEANS = List.of(
+        new WeatherTool(),
+        new CalculatorTool(),
+        new TimeTool()
+    );
+
     private final List<ToolCallback> all;
 
     private final Map<String, ToolCallback> byName;
 
     /**
-     * Spring DI 构造注入 - 自动收集所有 {@code @Component} 工具类。
+     * 聚合内置工具 Bean + Phase 11 MCP 工具提供者。
      *
-     * <p>{@code toolBeans} 包含所有 {@code @Component} 类（含 {@code @Tool} 方法），
-     * 通过 {@code ToolCallbacks.from(bean)} 反射提取 {@code @Tool} 方法为 {@code ToolCallback}。
-     * {@code providers} 为 Phase 11 MCP 扩展预留，Phase 4 为空列表。
+     * <p>内置工具通过 {@code ToolCallbacks.from(bean)} 反射提取 {@code @Tool} 方法为
+     * {@code ToolCallback}。{@code providers} 为 Phase 11 MCP 扩展预留，Phase 4 为空列表。
      *
      * <p>若两个 {@code @Tool} 方法返回相同 {@code name}，{@link Collectors#toUnmodifiableMap}
      * 会抛出 {@code IllegalStateException}（启动期 fail-fast，避免运行期隐藏的工具名冲突）。
      *
-     * @param toolBeans 所有 {@code @Component} 工具类（Spring DI 自动收集）
      * @param providers Phase 11 MCP 工具提供者（Phase 4 为空，可为 null 安全处理）
      */
-    public ToolRegistry(
-            List<Object> toolBeans,
-            @Autowired(required = false) List<ToolCallbackProvider> providers) {
+    public ToolRegistry(@Autowired(required = false) List<ToolCallbackProvider> providers) {
         // D-01: ToolCallbacks.from(bean) 反射收集 @Tool 方法
-        var built = toolBeans.stream()
+        var built = BUILTIN_TOOL_BEANS.stream()
             .flatMap(b -> Arrays.stream(ToolCallbacks.from(b)))
             .toList();
 

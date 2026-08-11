@@ -30,10 +30,7 @@ class ToolRegistryTest {
 
     @BeforeEach
     void setUp() {
-        registry = new ToolRegistry(
-            List.of(new WeatherTool(), new CalculatorTool(), new TimeTool()),
-            List.of()
-        );
+        registry = new ToolRegistry(List.of());
     }
 
     @Test
