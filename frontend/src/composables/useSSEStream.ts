@@ -122,13 +122,12 @@ export async function startSSEStream(
           case 'ErrorEvent':
             options.onError(data.message, data)
             break
-case 'ToolCallEvent':
+          case 'ToolCallEvent':
             options.onToolCall?.(data as ToolCallEvent)
             break
           case 'ToolResultEvent':
             options.onToolResult?.(data as ToolResultEvent)
             break
-          default:
           default:
             // Silently ignore unmapped event names (forward compat,
             // 02-UI-SPEC.md §Claude Discretion 决策 2)
