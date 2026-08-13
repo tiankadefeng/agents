@@ -45,7 +45,7 @@ const PHASE_ONLINE_MAP: Record<string, number> = {
 }
 
 function isPatternEnabled(patternId: string): boolean {
-  return patternId === 'cot'
+  return patternId === 'cot' || patternId === 'react'
 }
 
 function handlePatternClick(patternId: string) {
