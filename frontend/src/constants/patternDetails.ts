@@ -15,7 +15,7 @@ export interface PatternDetail {
 
 /**
  * PATTERN_DETAILS - single source of truth for pattern details.
- * CoT is fully populated; other patterns have placeholders for Phase 5+.
+ * CoT and ReAct are fully populated; other patterns have placeholders for Phase 6+.
  */
 export const PATTERN_DETAILS: Record<string, PatternDetail> = {
   cot: {
@@ -29,9 +29,17 @@ export const PATTERN_DETAILS: Record<string, PatternDetail> = {
     ]
   },
   react: {
-    coreIdea: '',
-    scenarios: '',
-    examples: []
+    coreIdea: 'ReAct (Reasoning + Acting) 是一种结合推理与行动的 Agent 模式。'
+      + '模型在思考过程中可以调用工具获取外部信息，基于工具返回的结果继续推理，'
+      + '形成 Thought -> Action -> Observation 循环，直到得出最终答案。',
+    scenarios: '需要外部信息的问题 (如天气查询、实时数据)、多步工具调用任务、'
+      + '需要从环境中获取反馈的推理任务。',
+    examples: [
+      '北京现在天气怎么样？适合户外跑步吗？',
+      '计算 (3.14 * 2.5) + 18.7 的结果',
+      '阿斯加德的民间传说 | 查一下今天是几号 | 两个事件相隔多久？',
+      '如果今天是 2026-08-11，距离 2027 年元旦还有多少天？'
+    ]
   },
   selfAsk: {
     coreIdea: '',

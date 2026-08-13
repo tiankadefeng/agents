@@ -5,28 +5,36 @@ import type {
   ReasoningEvent,
   FinalAnswerEvent,
   ErrorEvent,
+  ToolCallEvent,
+  ToolResultEvent,
 } from '@/types/agent'
 
 /**
  * SSE stream options - Phase 2 D-01 event-name routing.
  *
- * Phase 2 only 3 SSE event names emitted (via /api/ping):
+ * Phase 5 routing covers 5 SSE event names:
  * - ReasoningEvent -> onReasoning
  * - FinalAnswerEvent -> onFinal
  * - ErrorEvent -> onError
+ * - ToolCallEvent -> onToolCall (Phase 5 ReAct)
+ * - ToolResultEvent -> onToolResult (Phase 5 ReAct)
  *
- * Other 6 event names (ToolCallEvent etc.) are defined in the type system
- * but not emitted in Phase 2. They will be added in Phase 5+ when patterns
+ * Other event names (SubQuestionEvent etc.) are defined in the type system
+ * but not emitted yet. They will be added in Phase 6+ when patterns
  * emit them. The composable silently ignores unmapped event names.
  *
  * 回调签名扩展为双参数（content + ev）- 02-UI-SPEC.md §Claude Discretion 决策 1：
  * Phase 2 仅用便捷字段（与 Phase 1 App.vue 调用兼容），Phase 3+ 需要 ev.ts 等
  * 元数据时不必改回调签名。
+ * onToolCall/onToolResult 接收完整 event 对象（05-UI-SPEC.md §useSSEStream Refactor）：
+ * ToolCallEvent/ToolResultEvent 有多个等重要字段，无单一"便捷字段"。
  */
 export interface SSEStreamOptions {
   onReasoning: (content: string, ev: ReasoningEvent) => void
   onFinal: (content: string, ev: FinalAnswerEvent) => void
   onError: (message: string, ev: ErrorEvent) => void
+  onToolCall?: (ev: ToolCallEvent) => void
+  onToolResult?: (ev: ToolResultEvent) => void
   signal?: AbortSignal
 }
 
@@ -114,8 +122,13 @@ export async function startSSEStream(
           case 'ErrorEvent':
             options.onError(data.message, data)
             break
-          // Phase 5+ will add cases for ToolCallEvent / ToolResultEvent /
-          // SubQuestionEvent / PlanEvent / StepStartEvent / StepCompleteEvent
+          // Phase 5: ToolCallEvent / ToolResultEvent routing
+          case 'ToolCallEvent':
+            options.onToolCall?.(data as ToolCallEvent)
+            break
+          case 'ToolResultEvent':
+            options.onToolResult?.(data as ToolResultEvent)
+            break
           default:
             // Silently ignore unmapped event names (forward compat,
             // 02-UI-SPEC.md §Claude Discretion 决策 2)
