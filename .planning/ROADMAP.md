@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 2: Agent Abstraction** - AgentPattern 契约 + AgentEvent sealed 层次 + AgentRegistry
 - [x] **Phase 3: CoT Pattern** - 第一个模式（最简），完整 UI 表面首次落地 (completed 2026-08-06)
 - [x] **Phase 4: Tool Layer** - 内置工具（天气/计算器/时间）+ ToolRegistry (completed 2026-08-11)
-- [ ] **Phase 5: ReAct Pattern** - 最高风险模式，手动工具调用循环，验证 Tool Layer
+- [x] **Phase 5: ReAct Pattern** - 最高风险模式，手动工具调用循环，验证 Tool Layer (completed 2026-08-13)
 - [ ] **Phase 6: Self-Ask Pattern** - 子问题->子答案链式时间线
 - [ ] **Phase 7: Plan-and-Execute Pattern** - 两阶段（Planner + Executor）+ replan-on-failure
 - [ ] **Phase 8: Tree of Thoughts Pattern** - 分支生成 + LLM 评估 + 贪心剪枝
@@ -180,7 +180,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 05-03-PLAN.md - 前端 App.vue + ReasoningPanel 集成（垂直时间线 Thought/Action/Observation 分块）
+- [x] 05-03-PLAN.md - 前端 App.vue + ReasoningPanel 集成（垂直时间线 Thought/Action/Observation 分块）
 
 ### Phase 6: Self-Ask Pattern
 
@@ -283,7 +283,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 4 -> 5 -> 6 -> 7 -> 8 -> 
 | 3. CoT Pattern | 5/5 | Complete    | 2026-08-06 |
 | 03.1. ui-polish | 3/3 | Complete    | 2026-08-10 |
 | 4. Tool Layer | 3/3 | Complete   | 2026-08-11 |
-| 5. ReAct Pattern | 2/3 | In Progress|  |
+| 5. ReAct Pattern | 3/3 | Complete   | 2026-08-13 |
 | 6. Self-Ask Pattern | 0/0 | Not started | - |
 | 7. Plan-and-Execute Pattern | 0/0 | Not started | - |
 | 8. Tree of Thoughts Pattern | 0/0 | Not started | - |
