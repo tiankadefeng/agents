@@ -169,8 +169,18 @@ Plans:
   4. 相同工具+相同参数的重复调用返回 "use previous result"（去重生效）
   5. 工具调用结果在 ToolCallEventCard 和 ToolResultEventCard 中正确显示
 
-**Plans**: TBD
+**Plans**: 3 plans
 **UI hint**: yes
+
+Plans:
+**Wave 1** *(parallel - no file conflicts)*
+
+- [x] 05-01-PLAN.md - ReActAgentPattern 后端 + 单元测试（手动循环、MessageAggregator、去重、max_iterations=10）
+- [x] 05-02-PLAN.md - 前端新组件（ToolCallEventCard/ToolResultEventCard）+ useSSEStream 事件路由 + patternDetails + PatternSelector 启用
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 05-03-PLAN.md - 前端 App.vue + ReasoningPanel 集成（垂直时间线 Thought/Action/Observation 分块）
 
 ### Phase 6: Self-Ask Pattern
 
@@ -183,7 +193,7 @@ Plans:
   2. 每个子问题有对应的子答案，按时间线链式展示（子问题->子答案->下一子问题）
   3. 最终答案综合所有子问题答案得出，在最终答案区显示
 
-**Plans**: TBD
+**Plans**: 3 plans
 **UI hint**: yes
 
 ### Phase 7: Plan-and-Execute Pattern
@@ -197,7 +207,7 @@ Plans:
   2. Executor 逐步执行，每步以 StepStartEvent/StepCompleteEvent 展示当前状态（pending/running/done/failed）
   3. 步骤失败时触发 replan，新计划在前端可见（用户能看到计划变更）
 
-**Plans**: TBD
+**Plans**: 3 plans
 **UI hint**: yes
 
 ### Phase 8: Tree of Thoughts Pattern
@@ -212,7 +222,7 @@ Plans:
   3. top-K=2 剪枝生效，被剪枝的分支在前端有视觉标识（如灰色或删除线）
   4. 最终答案从存活分支中选出最优路径
 
-**Plans**: TBD
+**Plans**: 3 plans
 **UI hint**: yes
 
 ### Phase 9: Reflexion Pattern
@@ -228,7 +238,7 @@ Plans:
   4. 改进幅度低于 epsilon 时提前停止（避免无意义迭代）
   5. 前端时间线展示 attempt -> evaluate -> reflect 完整循环
 
-**Plans**: TBD
+**Plans**: 3 plans
 **UI hint**: yes
 
 ### Phase 10: Role-playing Pattern
@@ -243,7 +253,7 @@ Plans:
   3. 共 5 轮对话，最终由最后一个角色输出结论
   4. 每轮发言以流式方式实时显示（非等所有轮次完成后一次性显示）
 
-**Plans**: TBD
+**Plans**: 3 plans
 **UI hint**: yes
 
 ### Phase 11: MCP Integration
@@ -259,7 +269,7 @@ Plans:
   4. 前端 ToolCallEventCard 显示工具来源标识（builtin vs mcp），用户能区分工具来源
   5. ReAct 模式可调用 MCP 工具完成推理，无需修改 ReAct 模式代码（无缝集成）
 
-**Plans**: TBD
+**Plans**: 3 plans
 
 ## Progress
 
@@ -273,7 +283,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 4 -> 5 -> 6 -> 7 -> 8 -> 
 | 3. CoT Pattern | 5/5 | Complete    | 2026-08-06 |
 | 03.1. ui-polish | 3/3 | Complete    | 2026-08-10 |
 | 4. Tool Layer | 3/3 | Complete   | 2026-08-11 |
-| 5. ReAct Pattern | 0/0 | Not started | - |
+| 5. ReAct Pattern | 2/3 | In Progress|  |
 | 6. Self-Ask Pattern | 0/0 | Not started | - |
 | 7. Plan-and-Execute Pattern | 0/0 | Not started | - |
 | 8. Tree of Thoughts Pattern | 0/0 | Not started | - |
