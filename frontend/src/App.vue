@@ -2,7 +2,7 @@
 import { shallowRef, ref, watch } from 'vue'
 import { startSSEStream } from '@/composables/useSSEStream'
 import type { StreamStatus } from '@/types/sse'
-import type { AgentRequest } from '@/types/agent'
+import type { AgentRequest, AgentEvent } from '@/types/agent'
 import { PATTERN_DETAILS } from '@/constants/patternDetails'
 import PatternSelector from '@/components/PatternSelector.vue'
 import QuestionInput from '@/components/QuestionInput.vue'
@@ -18,6 +18,9 @@ const finalText = shallowRef<string>('')
 
 // Error alert uses ref (not streaming, single string)
 const errorAlert = ref<string>('')
+
+// AgentEvent list for ReasoningPanel vertical timeline (Phase 5)
+const agentEvents = ref<AgentEvent[]>([])
 
 // Status tracking
 const status = ref<StreamStatus>('idle')
@@ -52,6 +55,7 @@ async function submit(question: string) {
   reasoningText.value = ''
   finalText.value = ''
   errorAlert.value = ''
+  agentEvents.value = []
   status.value = 'thinking'
   streamAborted = false
   abortController = new AbortController()
@@ -70,9 +74,16 @@ async function submit(question: string) {
       '/api/agent/execute',
       requestBody,
       {
-        onReasoning: (content, _ev) => {
+        onReasoning: (content, ev) => {
           reasoningText.value += content
+          agentEvents.value = [...agentEvents.value, ev]
           status.value = 'thinking'
+        },
+        onToolCall: (ev) => {
+          agentEvents.value = [...agentEvents.value, ev]
+        },
+        onToolResult: (ev) => {
+          agentEvents.value = [...agentEvents.value, ev]
         },
         onFinal: (content, _ev) => {
           finalText.value += content
@@ -114,6 +125,7 @@ function clear() {
   reasoningText.value = ''
   finalText.value = ''
   errorAlert.value = ''
+  agentEvents.value = []
   status.value = 'idle'
 }
 </script>
@@ -152,7 +164,7 @@ function clear() {
             show-icon
           />
 
-          <ReasoningPanel :reasoning-text="reasoningText" :status="status" />
+          <ReasoningPanel :reasoning-text="reasoningText" :events="agentEvents" :status="status" />
 
           <FinalAnswer :final-text="finalText" :status="status" />
         </div>
