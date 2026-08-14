@@ -41,7 +41,7 @@ class PatternControllerWithMockTest {
             .exchange()
             .expectStatus().isOk()
             .expectBody()
-            .jsonPath("$.length()").isEqualTo(4)
+.jsonPath("$.length()").isEqualTo(4)
             .jsonPath("[?(@.id=='mock')].id").isNotEmpty()
             .jsonPath("[?(@.id=='mock')].displayName").isEqualTo("Mock 模式（验证用）")
             .jsonPath("[?(@.id=='mock')].description").isEqualTo("临时验证 Strategy + Plugin Registry，验证后移除。");
