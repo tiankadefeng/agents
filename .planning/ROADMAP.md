@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: CoT Pattern** - 第一个模式（最简），完整 UI 表面首次落地 (completed 2026-08-06)
 - [x] **Phase 4: Tool Layer** - 内置工具（天气/计算器/时间）+ ToolRegistry (completed 2026-08-11)
 - [x] **Phase 5: ReAct Pattern** - 最高风险模式，手动工具调用循环，验证 Tool Layer (completed 2026-08-13)
-- [ ] **Phase 6: Self-Ask Pattern** - 子问题->子答案链式时间线
+- [x] **Phase 6: Self-Ask Pattern** - 子问题->子答案链式时间线 (completed 2026-08-14)
 - [ ] **Phase 7: Plan-and-Execute Pattern** - 两阶段（Planner + Executor）+ replan-on-failure
 - [ ] **Phase 8: Tree of Thoughts Pattern** - 分支生成 + LLM 评估 + 贪心剪枝
 - [ ] **Phase 9: Reflexion Pattern** - generator + LLM-as-judge + reflector + retry
@@ -193,8 +193,13 @@ Plans:
   2. 每个子问题有对应的子答案，按时间线链式展示（子问题->子答案->下一子问题）
   3. 最终答案综合所有子问题答案得出，在最终答案区显示
 
-**Plans**: 3 plans
+**Plans**: 2 plans
 **UI hint**: yes
+
+Plans:
+
+- [x] 06-01-PLAN.md — Self-Ask 后端核心（SubAnswerEvent + SelfAskAgentPattern + 单元测试）
+- [x] 06-02-PLAN.md — Self-Ask 前端增强（类型定义 + SSE 路由 + 时间线 + PatternSelector 启用）
 
 ### Phase 7: Plan-and-Execute Pattern
 
@@ -284,7 +289,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 4 -> 5 -> 6 -> 7 -> 8 -> 
 | 03.1. ui-polish | 3/3 | Complete    | 2026-08-10 |
 | 4. Tool Layer | 3/3 | Complete   | 2026-08-11 |
 | 5. ReAct Pattern | 3/3 | Complete   | 2026-08-13 |
-| 6. Self-Ask Pattern | 0/0 | Not started | - |
+| 6. Self-Ask Pattern | 2/2 | Complete   | 2026-08-14 |
 | 7. Plan-and-Execute Pattern | 0/0 | Not started | - |
 | 8. Tree of Thoughts Pattern | 0/0 | Not started | - |
 | 9. Reflexion Pattern | 0/0 | Not started | - |
