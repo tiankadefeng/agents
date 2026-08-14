@@ -8,11 +8,11 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for {@link AgentEvent} sealed interface and its 9 record subtypes.
+ * Unit tests for {@link AgentEvent} sealed interface and its 10 record subtypes.
  *
  * <p>Verifies:
  * <ul>
- *   <li>D-04: All 9 records can be instantiated and implement AgentEvent</li>
+ *   <li>D-04: All 10 records can be instantiated and implement AgentEvent</li>
  *   <li>D-02: ts() accessor is available on all records (only common method)</li>
  *   <li>D-04: Record component accessors return values passed to constructor</li>
  * </ul>
@@ -22,25 +22,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 class AgentEventTest {
 
     @Test
-    void shouldInstantiateAllNineEventRecords() {
+    void shouldInstantiateAllTenEventRecords() {
         Instant now = Instant.now();
 
-        // D-04: 9 record subtypes, each implements AgentEvent
+        // D-04: 10 record subtypes, each implements AgentEvent
         AgentEvent reasoning = new ReasoningEvent(now, "thinking...");
         AgentEvent toolCall = new ToolCallEvent(now, "weather", Map.of("city", "Beijing"));
         AgentEvent toolResult = new ToolResultEvent(now, "weather", "25°C", false);
         AgentEvent subQuestion = new SubQuestionEvent(now, "What is the capital?");
+        AgentEvent subAnswer = new SubAnswerEvent(now, "What is the capital?", "Beijing");
         AgentEvent plan = new PlanEvent(now, "Step 1: search; Step 2: summarize");
         AgentEvent stepStart = new StepStartEvent(now, 1, "searching");
         AgentEvent stepComplete = new StepCompleteEvent(now, 1, "success");
         AgentEvent finalAnswer = new FinalAnswerEvent(now, "The answer is 42");
         AgentEvent error = new ErrorEvent(now, "Something went wrong");
 
-        // All 9 instances are AgentEvent subtypes
+        // All 10 instances are AgentEvent subtypes
         assertThat(reasoning).isInstanceOf(AgentEvent.class);
         assertThat(toolCall).isInstanceOf(AgentEvent.class);
         assertThat(toolResult).isInstanceOf(AgentEvent.class);
         assertThat(subQuestion).isInstanceOf(AgentEvent.class);
+        assertThat(subAnswer).isInstanceOf(AgentEvent.class);
         assertThat(plan).isInstanceOf(AgentEvent.class);
         assertThat(stepStart).isInstanceOf(AgentEvent.class);
         assertThat(stepComplete).isInstanceOf(AgentEvent.class);
@@ -52,6 +54,7 @@ class AgentEventTest {
         assertThat(toolCall.ts()).isNotNull();
         assertThat(toolResult.ts()).isNotNull();
         assertThat(subQuestion.ts()).isNotNull();
+        assertThat(subAnswer.ts()).isNotNull();
         assertThat(plan.ts()).isNotNull();
         assertThat(stepStart.ts()).isNotNull();
         assertThat(stepComplete.ts()).isNotNull();
@@ -60,6 +63,7 @@ class AgentEventTest {
 
         // ts() returns the exact Instant passed to constructor
         assertThat(reasoning.ts()).isEqualTo(now);
+        assertThat(subAnswer.ts()).isEqualTo(now);
         assertThat(error.ts()).isEqualTo(now);
     }
 
@@ -89,6 +93,11 @@ class AgentEventTest {
         // SubQuestionEvent: ts + question
         SubQuestionEvent subQuestion = new SubQuestionEvent(now, "sub-question?");
         assertThat(subQuestion.question()).isEqualTo("sub-question?");
+
+        // SubAnswerEvent: ts + question + answer
+        SubAnswerEvent subAnswer = new SubAnswerEvent(now, "sub-question?", "sub-answer");
+        assertThat(subAnswer.question()).isEqualTo("sub-question?");
+        assertThat(subAnswer.answer()).isEqualTo("sub-answer");
 
         // PlanEvent: ts + description (placeholder - Phase 7 will expand)
         PlanEvent plan = new PlanEvent(now, "plan description");
@@ -125,6 +134,7 @@ class AgentEventTest {
             new ToolCallEvent(now, "t", Map.of()),
             new ToolResultEvent(now, "t", "r", false),
             new SubQuestionEvent(now, "q"),
+            new SubAnswerEvent(now, "q", "a"),
             new PlanEvent(now, "d"),
             new StepStartEvent(now, 1, "d"),
             new StepCompleteEvent(now, 1, "s"),
@@ -150,6 +160,7 @@ class AgentEventTest {
             case ToolCallEvent t -> "tool-call:" + t.toolName();
             case ToolResultEvent t -> "tool-result:" + t.toolName();
             case SubQuestionEvent s -> "sub-question:" + s.question();
+            case SubAnswerEvent s -> "sub-answer:" + s.question() + " -> " + s.answer();
             case PlanEvent p -> "plan:" + p.description();
             case StepStartEvent s -> "step-start:" + s.stepNumber();
             case StepCompleteEvent s -> "step-complete:" + s.stepNumber();

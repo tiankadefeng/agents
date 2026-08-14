@@ -27,6 +27,7 @@ public sealed interface AgentEvent
             ToolCallEvent,
             ToolResultEvent,
             SubQuestionEvent,
+            SubAnswerEvent, // Phase 6 新增
             PlanEvent,
             StepStartEvent,
             StepCompleteEvent,
