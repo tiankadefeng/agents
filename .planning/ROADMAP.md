@@ -212,8 +212,14 @@ Plans:
   2. Executor 逐步执行，每步以 StepStartEvent/StepCompleteEvent 展示当前状态（pending/running/done/failed）
   3. 步骤失败时触发 replan，新计划在前端可见（用户能看到计划变更）
 
-**Plans**: 3 plans
+**Plans**: 2 plans
 **UI hint**: yes
+
+Plans:
+**Wave 1** *(parallel - no file conflicts)*
+
+- [ ] 07-01-PLAN.md - 后端核心（PlanEvent/StepCompleteEvent 重构 + PlanAndExecuteAgentPattern：Planner + Executor 子 agent + 汇总 + Replan）
+- [ ] 07-02-PLAN.md - 前端增强（类型更新 + useSSEStream 路由 + ReasoningPanel Plan/Step/StepComplete/Replan 时间线 + PatternSelector 启用 + patternDetails 填充）
 
 ### Phase 8: Tree of Thoughts Pattern
 
@@ -290,7 +296,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 4 -> 5 -> 6 -> 7 -> 8 -> 
 | 4. Tool Layer | 3/3 | Complete   | 2026-08-11 |
 | 5. ReAct Pattern | 3/3 | Complete   | 2026-08-13 |
 | 6. Self-Ask Pattern | 2/2 | Complete   | 2026-08-14 |
-| 7. Plan-and-Execute Pattern | 0/0 | Not started | - |
+| 7. Plan-and-Execute Pattern | 2/2 | Planned | - |
 | 8. Tree of Thoughts Pattern | 0/0 | Not started | - |
 | 9. Reflexion Pattern | 0/0 | Not started | - |
 | 10. Role-playing Pattern | 0/0 | Not started | - |
