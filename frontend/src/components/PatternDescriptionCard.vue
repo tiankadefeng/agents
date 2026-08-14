@@ -24,7 +24,11 @@ function handleExampleClick(question: string) {
 
 <template>
   <div v-if="detail" class="pattern-description-card">
-    <div class="card-title">{{ patternId === 'cot' ? 'CoT 思维链' : patternId === 'react' ? 'ReAct 推理+行动' : patternId }}</div>
+    <div class="card-title">{{
+          patternId === 'selfAsk' ? 'Self-Ask 自问自答' :
+          patternId === 'react' ? 'ReAct 推理+行动' :
+          patternId === 'cot' ? 'CoT 思维链' : patternId
+        }}</div>
 
     <div class="card-section">
       <div class="section-label">核心思想</div>
