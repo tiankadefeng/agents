@@ -39,6 +39,7 @@ export type AgentEvent =
   | ToolCallEvent
   | ToolResultEvent
   | SubQuestionEvent
+  | SubAnswerEvent
   | PlanEvent
   | StepStartEvent
   | StepCompleteEvent
@@ -82,6 +83,16 @@ export interface ToolResultEvent {
 export interface SubQuestionEvent {
   ts: InstantString
   question: string
+}
+
+/**
+ * SubAnswerEvent - mirrors backend com.agents.agent.core.events.SubAnswerEvent.
+ * Self-Ask 子问题答案 (Phase 6 用).
+ */
+export interface SubAnswerEvent {
+  ts: InstantString
+  question: string
+  answer: string
 }
 
 /**

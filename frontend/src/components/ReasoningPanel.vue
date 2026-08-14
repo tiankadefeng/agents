@@ -2,7 +2,7 @@
 import { shallowRef, computed } from 'vue'
 import { Check } from '@element-plus/icons-vue'
 import type { StreamStatus } from '@/types/sse'
-import type { AgentEvent, ReasoningEvent, ToolCallEvent, ToolResultEvent } from '@/types/agent'
+import type { AgentEvent, ReasoningEvent, ToolCallEvent, ToolResultEvent, SubQuestionEvent, SubAnswerEvent } from '@/types/agent'
 import ToolCallEventCard from './ToolCallEventCard.vue'
 import ToolResultEventCard from './ToolResultEventCard.vue'
 
@@ -34,7 +34,7 @@ const statusText = computed(() => {
 
 const subtitle = computed(() => {
   if (props.events) {
-    return activeNames.value.length > 0 ? '点击收起' : '点击展开 ReAct 推理过程'
+    return activeNames.value.length > 0 ? '点击收起' : '点击展开推理过程'
   }
   return activeNames.value.length > 0 ? '点击收起' : '点击展开 DeepSeek 的思考链'
 })
@@ -109,10 +109,22 @@ function handleChange(val: string[]) {
               :ts="(ev as ToolResultEvent).ts"
             />
           </div>
+          <!-- SubQuestion 块 (Phase 6 Self-Ask) -->
+          <div v-else-if="'question' in ev && !('answer' in ev)" class="timeline-item sub-question">
+            <span class="dot sub-question"></span>
+            <div class="label" style="color: #8B5CF6">子问题 (Sub-Question)</div>
+            <div class="content">{{ (ev as SubQuestionEvent).question }}</div>
+          </div>
+          <!-- SubAnswer 块 (Phase 6 Self-Ask) -->
+          <div v-else-if="'question' in ev && 'answer' in ev" class="timeline-item sub-answer">
+            <span class="dot sub-answer"></span>
+            <div class="label" style="color: #0D9488">子答案 (Sub-Answer)</div>
+            <div class="content">{{ (ev as SubAnswerEvent).answer }}</div>
+          </div>
           <!-- FinalAnswerEvent and ErrorEvent are skipped (handled by FinalAnswer component and el-alert) -->
         </template>
         <div v-if="events.length === 0" class="empty-state">
-          暂无推理过程。提交问题后，这里会流式显示 ReAct 模式的 Thought/Action/Observation 循环。
+          暂无推理过程。提交问题后，这里会流式显示推理过程。
         </div>
       </div>
       </el-collapse-item>
@@ -238,6 +250,8 @@ function handleChange(val: string[]) {
 .dot.thought { border-color: #E6A23C; }
 .dot.action { border-color: #1D70F5; }
 .dot.observation { border-color: #15AC0C; }
+.dot.sub-question { border-color: #8B5CF6; }
+.dot.sub-answer { border-color: #0D9488; }
 .label {
   font-size: 12px;
   font-weight: 600;
