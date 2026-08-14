@@ -12,6 +12,7 @@ export type AgentEventName =
   | 'ToolCallEvent'
   | 'ToolResultEvent'
   | 'SubQuestionEvent'
+  | 'SubAnswerEvent'
   | 'PlanEvent'
   | 'StepStartEvent'
   | 'StepCompleteEvent'

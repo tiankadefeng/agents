@@ -7,20 +7,24 @@ import type {
   ErrorEvent,
   ToolCallEvent,
   ToolResultEvent,
+  SubQuestionEvent,
+  SubAnswerEvent,
 } from '@/types/agent'
 
 /**
  * SSE stream options - Phase 2 D-01 event-name routing.
  *
- * Phase 5 routing covers 5 SSE event names:
+ * Phase 6 routing covers 7 SSE event names:
  * - ReasoningEvent -> onReasoning
  * - FinalAnswerEvent -> onFinal
  * - ErrorEvent -> onError
  * - ToolCallEvent -> onToolCall (Phase 5 ReAct)
  * - ToolResultEvent -> onToolResult (Phase 5 ReAct)
+ * - SubQuestionEvent -> onSubQuestion (Phase 6 Self-Ask)
+ * - SubAnswerEvent -> onSubAnswer (Phase 6 Self-Ask)
  *
- * Other event names (SubQuestionEvent etc.) are defined in the type system
- * but not emitted yet. They will be added in Phase 6+ when patterns
+ * Other event names are defined in the type system
+ * but not emitted yet. They will be added in Phase 7+ when patterns
  * emit them. The composable silently ignores unmapped event names.
  *
  * 回调签名扩展为双参数（content + ev）- 02-UI-SPEC.md §Claude Discretion 决策 1：
@@ -35,6 +39,8 @@ export interface SSEStreamOptions {
   onError: (message: string, ev: ErrorEvent) => void
   onToolCall?: (ev: ToolCallEvent) => void
   onToolResult?: (ev: ToolResultEvent) => void
+  onSubQuestion?: (ev: SubQuestionEvent) => void
+  onSubAnswer?: (ev: SubAnswerEvent) => void
   signal?: AbortSignal
 }
 
@@ -127,6 +133,12 @@ export async function startSSEStream(
             break
           case 'ToolResultEvent':
             options.onToolResult?.(data as ToolResultEvent)
+            break
+          case 'SubQuestionEvent':
+            options.onSubQuestion?.(data as SubQuestionEvent)
+            break
+          case 'SubAnswerEvent':
+            options.onSubAnswer?.(data as SubAnswerEvent)
             break
           default:
             // Silently ignore unmapped event names (forward compat,
