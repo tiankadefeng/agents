@@ -4,14 +4,12 @@ import { Promotion, Delete, Close } from '@element-plus/icons-vue'
 
 const props = defineProps<{
   streaming: boolean
-  examples?: string[]
 }>()
 
 const emit = defineEmits<{
   submit: [question: string]
   abort: []
   clear: []
-  selectExample: [question: string]
 }>()
 
 const question = ref('')
@@ -34,28 +32,11 @@ function onKeydown(e: KeyboardEvent) {
     onSubmit()
   }
 }
-
-function handleSelectExample(example: string) {
-  question.value = example
-  emit('selectExample', example)
-}
 </script>
 
 <template>
   <div class="question-input">
     <label class="input-label">问题</label>
-    <div v-if="examples && examples.length > 0" class="example-questions">
-      <el-button
-        v-for="ex in examples"
-        :key="ex"
-        size="small"
-        type="default"
-        :disabled="streaming"
-        @click="handleSelectExample(ex)"
-      >
-        {{ ex }}
-      </el-button>
-    </div>
     <el-input
       v-model="question"
       type="textarea"
@@ -94,13 +75,6 @@ function handleSelectExample(example: string) {
   font-size: var(--design-font-size-base);
   color: var(--design-text-primary);
   font-weight: 500;
-  margin-bottom: var(--design-spacing-sm);
-}
-
-.example-questions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--design-spacing-sm);
   margin-bottom: var(--design-spacing-sm);
 }
 

@@ -4,22 +4,9 @@ import { PATTERN_DETAILS } from '@/constants/patternDetails'
 
 const props = defineProps<{
   patternId: string
-  onSelectExample?: (question: string) => void
-}>()
-
-const emit = defineEmits<{
-  selectExample: [question: string]
 }>()
 
 const detail = computed(() => PATTERN_DETAILS[props.patternId])
-
-function handleExampleClick(question: string) {
-  if (props.onSelectExample) {
-    props.onSelectExample(question)
-  } else {
-    emit('selectExample', question)
-  }
-}
 </script>
 
 <template>
@@ -41,20 +28,7 @@ function handleExampleClick(question: string) {
       <div class="section-content">{{ detail.scenarios }}</div>
     </div>
 
-    <div v-if="detail.examples.length > 0" class="card-section">
-      <div class="section-label">示例问题</div>
-      <div class="example-buttons">
-        <el-button
-          v-for="(example, index) in detail.examples"
-          :key="index"
-          size="small"
-          type="default"
-          @click="handleExampleClick(example)"
-        >
-          {{ example }}
-        </el-button>
-      </div>
-    </div>
+    <!-- 示例问题已移除：用户反馈不需要左侧示例问题，保持简洁 -->
   </div>
 </template>
 
@@ -88,17 +62,5 @@ function handleExampleClick(question: string) {
   font-size: var(--design-font-size-base);
   color: var(--design-text-regular);
   line-height: var(--design-line-height-base);
-}
-
-.example-buttons {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--design-spacing-sm);
-}
-
-.example-buttons :deep(.el-button) {
-  width: 100%;
-  white-space: normal;
-  word-break: break-word;
 }
 </style>

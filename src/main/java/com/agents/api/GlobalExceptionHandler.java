@@ -2,8 +2,8 @@ package com.agents.api;
 
 import com.agents.agent.core.ErrorEvent;
 import com.agents.streaming.SseEventEmitter;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -21,8 +21,14 @@ import java.time.Instant;
  * <p>Catches exceptions thrown BEFORE the reactive chain starts streaming
  * (e.g., JSON parse failure, API key missing, validation errors).
  *
- * <p>In-stream exceptions are handled by PingController.onErrorResume() which
+ * <p>In-stream exceptions are handled by the controllers' onErrorResume() which
  * is more reliable for mid-stream failures.
+ *
+ * <p>注: 不直接返回 {@code ResponseEntity<Flux<ServerSentEvent>>}——Spring MVC 的
+ * {@code HttpEntityMethodProcessor} 不识别 {@code ResponseEntity} 包装的响应式类型，
+ * 会尝试用 {@code HttpMessageConverter} 序列化 {@code FluxJust} 而抛
+ * {@code HttpMessageNotWritableException}。改为注入 {@link HttpServletResponse}
+ * 设置状态码后直接返回 {@code Flux}。
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -34,9 +40,10 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Flux<ServerSentEvent<String>>> handle(Exception ex) {
+    public Flux<ServerSentEvent<String>> handle(Exception ex, HttpServletResponse response) {
         // D-08: SSE error event with exception type + message, no stacktrace (T-2-06)
-        Flux<ServerSentEvent<String>> flux = Flux.just(
+        response.setStatus(200);
+        return Flux.just(
             sseEmitter.fromAgentEvent(
                 new ErrorEvent(
                     Instant.now(),
@@ -44,8 +51,5 @@ public class GlobalExceptionHandler {
                 )
             )
         );
-        return ResponseEntity.ok()
-            .contentType(MediaType.TEXT_EVENT_STREAM)
-            .body(flux);
     }
 }

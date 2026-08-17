@@ -75,8 +75,8 @@ function isReplan(index: number): boolean {
             </div>
           </div>
         </template>
-        <!-- Legacy: plain text reasoning (CoT mode) -->
-        <template v-if="!events">
+        <!-- Legacy: plain text reasoning (CoT mode) — also used when events array is empty -->
+        <template v-if="!events || events.length === 0">
           <pre
           v-if="reasoningText"
           class="reasoning-content"

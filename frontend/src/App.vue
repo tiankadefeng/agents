@@ -3,7 +3,6 @@ import { shallowRef, ref, watch } from 'vue'
 import { startSSEStream } from '@/composables/useSSEStream'
 import type { StreamStatus } from '@/types/sse'
 import type { AgentRequest, AgentEvent } from '@/types/agent'
-import { PATTERN_DETAILS } from '@/constants/patternDetails'
 import PatternSelector from '@/components/PatternSelector.vue'
 import QuestionInput from '@/components/QuestionInput.vue'
 import ReasoningPanel from '@/components/ReasoningPanel.vue'
@@ -76,7 +75,10 @@ async function submit(question: string) {
       {
         onReasoning: (content, ev) => {
           reasoningText.value += content
-          agentEvents.value = [...agentEvents.value, ev]
+          // CoT 模式下每个 token 都是独立 ReasoningEvent，不加入 timeline（避免逐词显示为"思考"块）
+          if (selectedPatternId.value !== 'cot') {
+            agentEvents.value = [...agentEvents.value, ev]
+          }
           status.value = 'thinking'
         },
         onToolCall: (ev) => {
@@ -164,7 +166,6 @@ function clear() {
         <div class="main-content">
           <QuestionInput
             :streaming="status === 'thinking' || status === 'answering'"
-            :examples="PATTERN_DETAILS[selectedPatternId]?.examples || []"
             @submit="submit"
             @abort="abort"
             @clear="clear"
