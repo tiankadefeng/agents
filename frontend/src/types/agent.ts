@@ -126,6 +126,12 @@ export interface StepStartEvent {
 }
 
 /**
+ * StepStatus - Plan-and-Execute 步骤状态 (Phase 7).
+ * "done" 表示成功完成，"failed" 表示失败。
+ */
+export type StepStatus = 'done' | 'failed'
+
+/**
  * StepCompleteEvent - mirrors backend com.agents.agent.core.events.StepCompleteEvent.
  * Plan-and-Execute 步骤完成 (Phase 7 用).
  * D-08: 增加 result 字段，status 取值 "done" 或 "failed"。
@@ -133,7 +139,7 @@ export interface StepStartEvent {
 export interface StepCompleteEvent {
   ts: InstantString
   stepNumber: number
-  status: string        // "done" | "failed"
+  status: StepStatus
   result: string        // Phase 7 新增
 }
 

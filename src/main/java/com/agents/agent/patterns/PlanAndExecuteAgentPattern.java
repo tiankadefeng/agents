@@ -182,9 +182,14 @@ public class PlanAndExecuteAgentPattern implements AgentPattern {
                         String eval = chatClientBuilder.defaultSystem(SELF_EVAL_SYSTEM_PROMPT).build().prompt()
                             .user(u -> u.text("步骤: " + evalDesc + "\n预期输出: " + evalExp + "\n实际结果: " + evalR))
                             .call().content();
-                        boolean hasNo = eval != null && eval.toLowerCase().contains("no");
-                        boolean hasYes = eval != null && eval.toLowerCase().contains("yes");
-                        failed = hasNo && !hasYes;
+                        if (eval == null) {
+                            failed = true;  // fail closed when eval unavailable
+                        } else {
+                            String evalLc = eval.toLowerCase();
+                            boolean hasNo = evalLc.matches(".*\\bno\\b.*");
+                            boolean hasYes = evalLc.matches(".*\\byes\\b.*");
+                            failed = hasNo && !hasYes;
+                        }
                     }
 
                     if (failed) {

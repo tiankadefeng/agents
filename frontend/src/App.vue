@@ -118,7 +118,7 @@ async function submit(question: string) {
     }
   } catch (e) {
     if (!streamAborted) {
-      errorAlert.value = (e as Error).message
+      errorAlert.value = e instanceof Error ? e.message : String(e)
       status.value = 'error'
     }
   }
