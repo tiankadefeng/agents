@@ -96,13 +96,23 @@ export interface SubAnswerEvent {
 }
 
 /**
+ * Step - Plan-and-Execute 步骤定义 (Phase 7).
+ * 每步含步骤号、描述、预期输出。
+ */
+export interface Step {
+  stepNumber: number
+  description: string
+  expectedOutput: string
+}
+
+/**
  * PlanEvent - mirrors backend com.agents.agent.core.events.PlanEvent.
  * Plan-and-Execute 计划生成 (Phase 7 用).
+ * D-01: 从 String description 改为 List<Step> steps。
  */
 export interface PlanEvent {
   ts: InstantString
-  /** placeholder - Phase 7 将扩展为 List<String> steps */
-  description: string
+  steps: Step[]
 }
 
 /**
@@ -118,12 +128,13 @@ export interface StepStartEvent {
 /**
  * StepCompleteEvent - mirrors backend com.agents.agent.core.events.StepCompleteEvent.
  * Plan-and-Execute 步骤完成 (Phase 7 用).
+ * D-08: 增加 result 字段，status 取值 "done" 或 "failed"。
  */
 export interface StepCompleteEvent {
   ts: InstantString
   stepNumber: number
-  /** placeholder - Phase 7 可能加 String result */
-  status: string
+  status: string        // "done" | "failed"
+  result: string        // Phase 7 新增
 }
 
 /**

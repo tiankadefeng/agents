@@ -2,7 +2,7 @@
 import { shallowRef, computed } from 'vue'
 import { Check } from '@element-plus/icons-vue'
 import type { StreamStatus } from '@/types/sse'
-import type { AgentEvent, ReasoningEvent, ToolCallEvent, ToolResultEvent, SubQuestionEvent, SubAnswerEvent } from '@/types/agent'
+import type { AgentEvent, ReasoningEvent, ToolCallEvent, ToolResultEvent, SubQuestionEvent, SubAnswerEvent, PlanEvent, StepStartEvent, StepCompleteEvent } from '@/types/agent'
 import ToolCallEventCard from './ToolCallEventCard.vue'
 import ToolResultEventCard from './ToolResultEventCard.vue'
 
@@ -41,6 +41,16 @@ const subtitle = computed(() => {
 
 function handleChange(val: string[]) {
   activeNames.value = val
+}
+
+/**
+ * Check if the event at the given index is a replan (i.e., the previous event is also a PlanEvent).
+ * Used to render the Replan divider before the second PlanEvent.
+ */
+function isReplan(index: number): boolean {
+  if (index <= 0) return false
+  const prevEv = props.events?.[index - 1]
+  return !!(prevEv && 'steps' in prevEv)
 }
 </script>
 
@@ -83,7 +93,7 @@ function handleChange(val: string[]) {
       <div v-else class="timeline">
         <template v-for="(ev, i) in events" :key="i">
           <!-- ReasoningEvent -> Thought block -->
-          <div v-if="'content' in ev && !('toolName' in ev) && !('message' in ev)" class="timeline-item thought">
+          <div v-if="'content' in ev && !('toolName' in ev) && !('message' in ev) && !('steps' in ev)" class="timeline-item thought">
             <span class="dot thought"></span>
             <div class="label">思考 (Thought)</div>
             <div class="content">{{ (ev as ReasoningEvent).content }}</div>
@@ -120,6 +130,45 @@ function handleChange(val: string[]) {
             <span class="dot sub-answer"></span>
             <div class="label" style="color: #0D9488">子答案 (Sub-Answer)</div>
             <div class="content">{{ (ev as SubAnswerEvent).answer }}</div>
+          </div>
+          <!-- Phase 7: Plan block (with optional Replan divider) -->
+          <template v-else-if="'steps' in ev">
+            <div v-if="isReplan(i)" class="replan-divider">
+              <span class="replan-divider-text">重新规划 (Replan)</span>
+            </div>
+            <div class="timeline-item">
+              <span class="dot plan"></span>
+              <div class="label" style="color: #F59E0B">计划 (Plan)</div>
+              <div class="plan-steps-container">
+                <div v-for="step in (ev as PlanEvent).steps" :key="step.stepNumber" class="plan-step-item">
+                  <div class="plan-step-number">步骤 {{ step.stepNumber }}</div>
+                  <div class="plan-step-title">{{ step.description }}</div>
+                  <div class="plan-step-expected">
+                    <span class="plan-step-expected-label">预期输出: </span>
+                    {{ step.expectedOutput }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+          <!-- Phase 7: StepStartEvent -> Step running 块 -->
+          <div v-else-if="'stepNumber' in ev && !('status' in ev)" class="timeline-item">
+            <span class="dot step-running"></span>
+            <div class="label" style="color: #1D70F5">步骤 {{ (ev as StepStartEvent).stepNumber }} 执行中</div>
+            <div class="content">{{ (ev as StepStartEvent).description }}</div>
+          </div>
+          <!-- Phase 7: StepCompleteEvent -> Step done/failed 块 -->
+          <div v-else-if="'stepNumber' in ev && 'status' in ev && 'result' in ev" class="timeline-item">
+            <template v-if="(ev as StepCompleteEvent).status === 'done'">
+              <span class="dot step-done"></span>
+              <div class="label" style="color: #15AC0C">步骤 {{ (ev as StepCompleteEvent).stepNumber }} 已完成</div>
+              <div class="content">{{ (ev as StepCompleteEvent).result }}</div>
+            </template>
+            <template v-else>
+              <span class="dot step-failed"></span>
+              <div class="label" style="color: #D70016">步骤 {{ (ev as StepCompleteEvent).stepNumber }} 执行失败</div>
+              <div class="content" style="color: #D70016">{{ (ev as StepCompleteEvent).result }}</div>
+            </template>
           </div>
           <!-- FinalAnswerEvent and ErrorEvent are skipped (handled by FinalAnswer component and el-alert) -->
         </template>
@@ -252,6 +301,11 @@ function handleChange(val: string[]) {
 .dot.observation { border-color: #15AC0C; }
 .dot.sub-question { border-color: #8B5CF6; }
 .dot.sub-answer { border-color: #0D9488; }
+/* Phase 7: Plan-and-Execute timeline dots */
+.dot.plan { border-color: #F59E0B; }
+.dot.step-running { border-color: #1D70F5; }
+.dot.step-done { border-color: #15AC0C; }
+.dot.step-failed { border-color: #D70016; }
 .label {
   font-size: 12px;
   font-weight: 600;
@@ -264,5 +318,59 @@ function handleChange(val: string[]) {
   color: #555555;
   white-space: pre-wrap;
   word-wrap: break-word;
+}
+/* Phase 7: Plan steps container */
+.plan-steps-container {
+  border: 1px solid #E4E7ED;
+  border-radius: 4px;
+  background: #FFFDF5;
+  padding: 12px;
+  margin-top: 8px;
+}
+.plan-step-item {
+  margin-bottom: 12px;
+}
+.plan-step-item:last-child {
+  margin-bottom: 0;
+}
+.plan-step-number {
+  font-size: 12px;
+  font-weight: 600;
+  color: #F59E0B;
+  margin-bottom: 2px;
+}
+.plan-step-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #222222;
+  margin-bottom: 2px;
+}
+.plan-step-expected {
+  font-size: 14px;
+  color: #666666;
+}
+.plan-step-expected-label {
+  color: #666666;
+}
+/* Phase 7: Replan divider */
+.replan-divider {
+  display: flex;
+  align-items: center;
+  margin: 16px 0;
+  padding-left: 24px;
+}
+.replan-divider::before,
+.replan-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  border-top: 1px dashed #E4E7ED;
+}
+.replan-divider-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #909399;
+  padding: 0 12px;
+  white-space: nowrap;
 }
 </style>

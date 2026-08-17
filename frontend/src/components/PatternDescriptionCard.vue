@@ -25,6 +25,7 @@ function handleExampleClick(question: string) {
 <template>
   <div v-if="detail" class="pattern-description-card">
     <div class="card-title">{{
+          patternId === 'planExecute' ? 'Plan-and-Execute 计划与执行' :
           patternId === 'selfAsk' ? 'Self-Ask 自问自答' :
           patternId === 'react' ? 'ReAct 推理+行动' :
           patternId === 'cot' ? 'CoT 思维链' : patternId

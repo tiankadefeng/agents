@@ -91,6 +91,15 @@ async function submit(question: string) {
         onSubAnswer: (ev) => {
           agentEvents.value = [...agentEvents.value, ev]
         },
+        onPlan: (ev) => {
+          agentEvents.value = [...agentEvents.value, ev]
+        },
+        onStepStart: (ev) => {
+          agentEvents.value = [...agentEvents.value, ev]
+        },
+        onStepComplete: (ev) => {
+          agentEvents.value = [...agentEvents.value, ev]
+        },
         onFinal: (content, _ev) => {
           finalText.value += content
           status.value = 'answering'

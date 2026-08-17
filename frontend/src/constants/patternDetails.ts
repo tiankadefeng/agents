@@ -56,9 +56,17 @@ export const PATTERN_DETAILS: Record<string, PatternDetail> = {
     ]
   },
   planExecute: {
-    coreIdea: '',
-    scenarios: '',
-    examples: []
+    coreIdea: 'Plan-and-Execute (计划与执行) 是一种将任务分解为"先规划、后执行"两阶段的 Agent 模式。'
+      + 'Planner 首先生成结构化计划（步骤列表），Executor 按顺序逐步执行每个步骤，每步可调用工具。'
+      + '步骤失败时自动重新规划剩余步骤，体现"计划会动态调整"的适应性。',
+    scenarios: '需要多步骤规划的任务（如旅行计划、商业决策分析）、'
+      + '需要分步执行且每步可独立完成的任务、需要动态调整计划的场景。',
+    examples: [
+      '计划一次火星旅行，包括预算、路线、物资清单',
+      '分析是否应该投资一家新的咖啡店，考虑成本、位置、竞争',
+      '制定一个为期三天的北京旅游计划，包括交通、住宿、景点',
+      '计划一次家庭聚会，包括预算、菜单、活动安排'
+    ]
   },
   tot: {
     coreIdea: '',

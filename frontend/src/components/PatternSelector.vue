@@ -45,7 +45,10 @@ const PHASE_ONLINE_MAP: Record<string, number> = {
 }
 
 function isPatternEnabled(patternId: string): boolean {
-  return patternId === 'cot' || patternId === 'react' || patternId === 'selfAsk'
+  return patternId === 'cot'
+    || patternId === 'react'
+    || patternId === 'selfAsk'
+    || patternId === 'planExecute'  // Phase 7 新增
 }
 
 function handlePatternClick(patternId: string) {
