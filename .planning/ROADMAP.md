@@ -19,7 +19,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4: Tool Layer** - 内置工具（天气/计算器/时间）+ ToolRegistry (completed 2026-08-11)
 - [x] **Phase 5: ReAct Pattern** - 最高风险模式，手动工具调用循环，验证 Tool Layer (completed 2026-08-13)
 - [x] **Phase 6: Self-Ask Pattern** - 子问题->子答案链式时间线 (completed 2026-08-14)
-- [ ] **Phase 7: Plan-and-Execute Pattern** - 两阶段（Planner + Executor）+ replan-on-failure
+- [x] **Phase 7: Plan-and-Execute Pattern** - 两阶段（Planner + Executor）+ replan-on-failure (completed 2026-08-17)
 - [ ] **Phase 8: Tree of Thoughts Pattern** - 分支生成 + LLM 评估 + 贪心剪枝
 - [ ] **Phase 9: Reflexion Pattern** - generator + LLM-as-judge + reflector + retry
 - [ ] **Phase 10: Role-playing Pattern** - 3 角色（PM/Dev/Tester）5 轮对话
@@ -218,8 +218,8 @@ Plans:
 Plans:
 **Wave 1** *(parallel - no file conflicts)*
 
-- [ ] 07-01-PLAN.md - 后端核心（PlanEvent/StepCompleteEvent 重构 + PlanAndExecuteAgentPattern：Planner + Executor 子 agent + 汇总 + Replan）
-- [ ] 07-02-PLAN.md - 前端增强（类型更新 + useSSEStream 路由 + ReasoningPanel Plan/Step/StepComplete/Replan 时间线 + PatternSelector 启用 + patternDetails 填充）
+- [x] 07-01-PLAN.md - 后端核心（PlanEvent/StepCompleteEvent 重构 + PlanAndExecuteAgentPattern：Planner + Executor 子 agent + 汇总 + Replan）
+- [x] 07-02-PLAN.md - 前端增强（类型更新 + useSSEStream 路由 + ReasoningPanel Plan/Step/StepComplete/Replan 时间线 + PatternSelector 启用 + patternDetails 填充）
 
 ### Phase 8: Tree of Thoughts Pattern
 
@@ -296,7 +296,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 4 -> 5 -> 6 -> 7 -> 8 -> 
 | 4. Tool Layer | 3/3 | Complete   | 2026-08-11 |
 | 5. ReAct Pattern | 3/3 | Complete   | 2026-08-13 |
 | 6. Self-Ask Pattern | 2/2 | Complete   | 2026-08-14 |
-| 7. Plan-and-Execute Pattern | 2/2 | Planned | - |
+| 7. Plan-and-Execute Pattern | 2/2 | Complete   | 2026-08-17 |
 | 8. Tree of Thoughts Pattern | 0/0 | Not started | - |
 | 9. Reflexion Pattern | 0/0 | Not started | - |
 | 10. Role-playing Pattern | 0/0 | Not started | - |
