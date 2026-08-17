@@ -3,14 +3,16 @@ package com.agents.agent.core;
 import java.time.Instant;
 
 /**
- * Plan-and-Execute 步骤完成 (Phase 7 用)。
+ * Plan-and-Execute 步骤完成 (Phase 7).
  *
- * <p>D-04: 字段 = {@code ts} + {@code stepNumber} + {@code status}。
- * placeholder - Phase 7 可能加 {@code String result} 字段承载步骤执行结果，由 planner 决定。
- * 当前 {@code status} 为步骤完成状态（如 "success" / "skipped"），供前端标记 el-steps 完成态。
+ * <p>D-08: 字段 = {@code ts} + {@code stepNumber} + {@code status} + {@code result}。
+ * {@code status} 取值: "done" 表示成功完成，"failed" 表示失败 (D-09)。
+ * {@code result} 为步骤执行结果文本（可为 null 或空字符串）。
+ * 前端按 status 渲染绿色（done）或红色（failed）标记。
  */
 public record StepCompleteEvent(
     Instant ts,
     int stepNumber,
-    String status
+    String status,
+    String result
 ) implements AgentEvent {}
