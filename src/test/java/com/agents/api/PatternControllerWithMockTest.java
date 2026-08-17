@@ -36,12 +36,13 @@ class PatternControllerWithMockTest {
             .build();
 
         // SC#4: @Import(MockPattern.class) 后 MockPattern 自动注册到 AgentRegistry，
-        // GET /api/patterns 返回含 cot（Phase 3）、react（Phase 5）、selfAsk（Phase 6）和 mock 的模式列表
+        // GET /api/patterns 返回含 cot（Phase 3）、react（Phase 5）、selfAsk（Phase 6）、
+        // planExecute（Phase 7）和 mock 的模式列表
         client.get().uri("/api/patterns")
             .exchange()
             .expectStatus().isOk()
             .expectBody()
-.jsonPath("$.length()").isEqualTo(4)
+.jsonPath("$.length()").isEqualTo(5)
             .jsonPath("[?(@.id=='mock')].id").isNotEmpty()
             .jsonPath("[?(@.id=='mock')].displayName").isEqualTo("Mock 模式（验证用）")
             .jsonPath("[?(@.id=='mock')].description").isEqualTo("临时验证 Strategy + Plugin Registry，验证后移除。");

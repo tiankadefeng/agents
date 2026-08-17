@@ -3,6 +3,7 @@ package com.agents.agent.core;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,9 +32,9 @@ class AgentEventTest {
         AgentEvent toolResult = new ToolResultEvent(now, "weather", "25°C", false);
         AgentEvent subQuestion = new SubQuestionEvent(now, "What is the capital?");
         AgentEvent subAnswer = new SubAnswerEvent(now, "What is the capital?", "Beijing");
-        AgentEvent plan = new PlanEvent(now, "Step 1: search; Step 2: summarize");
+        AgentEvent plan = new PlanEvent(now, List.of(new PlanEvent.Step(1, "Step 1: search", "search result")));
         AgentEvent stepStart = new StepStartEvent(now, 1, "searching");
-        AgentEvent stepComplete = new StepCompleteEvent(now, 1, "success");
+        AgentEvent stepComplete = new StepCompleteEvent(now, 1, "done", "result text");
         AgentEvent finalAnswer = new FinalAnswerEvent(now, "The answer is 42");
         AgentEvent error = new ErrorEvent(now, "Something went wrong");
 
@@ -99,19 +100,26 @@ class AgentEventTest {
         assertThat(subAnswer.question()).isEqualTo("sub-question?");
         assertThat(subAnswer.answer()).isEqualTo("sub-answer");
 
-        // PlanEvent: ts + description (placeholder - Phase 7 will expand)
-        PlanEvent plan = new PlanEvent(now, "plan description");
-        assertThat(plan.description()).isEqualTo("plan description");
+        // PlanEvent: ts + steps (Phase 7: List<Step>)
+        PlanEvent plan = new PlanEvent(now, List.of(
+            new PlanEvent.Step(1, "step 1", "output 1"),
+            new PlanEvent.Step(2, "step 2", "output 2")
+        ));
+        assertThat(plan.steps()).hasSize(2);
+        assertThat(plan.steps().get(0).stepNumber()).isEqualTo(1);
+        assertThat(plan.steps().get(0).description()).isEqualTo("step 1");
+        assertThat(plan.steps().get(0).expectedOutput()).isEqualTo("output 1");
 
         // StepStartEvent: ts + stepNumber + description
         StepStartEvent stepStart = new StepStartEvent(now, 3, "executing step 3");
         assertThat(stepStart.stepNumber()).isEqualTo(3);
         assertThat(stepStart.description()).isEqualTo("executing step 3");
 
-        // StepCompleteEvent: ts + stepNumber + status (placeholder - Phase 7 may expand)
-        StepCompleteEvent stepComplete = new StepCompleteEvent(now, 3, "success");
+        // StepCompleteEvent: ts + stepNumber + status + result (Phase 7: expanded)
+        StepCompleteEvent stepComplete = new StepCompleteEvent(now, 3, "done", "step result");
         assertThat(stepComplete.stepNumber()).isEqualTo(3);
-        assertThat(stepComplete.status()).isEqualTo("success");
+        assertThat(stepComplete.status()).isEqualTo("done");
+        assertThat(stepComplete.result()).isEqualTo("step result");
 
         // FinalAnswerEvent: ts + content
         FinalAnswerEvent finalAnswer = new FinalAnswerEvent(now, "final answer");
@@ -135,9 +143,9 @@ class AgentEventTest {
             new ToolResultEvent(now, "t", "r", false),
             new SubQuestionEvent(now, "q"),
             new SubAnswerEvent(now, "q", "a"),
-            new PlanEvent(now, "d"),
+            new PlanEvent(now, List.of(new PlanEvent.Step(1, "d", "o"))),
             new StepStartEvent(now, 1, "d"),
-            new StepCompleteEvent(now, 1, "s"),
+            new StepCompleteEvent(now, 1, "s", "r"),
             new FinalAnswerEvent(now, "a"),
             new ErrorEvent(now, "e"),
         };
@@ -161,9 +169,9 @@ class AgentEventTest {
             case ToolResultEvent t -> "tool-result:" + t.toolName();
             case SubQuestionEvent s -> "sub-question:" + s.question();
             case SubAnswerEvent s -> "sub-answer:" + s.question() + " -> " + s.answer();
-            case PlanEvent p -> "plan:" + p.description();
+            case PlanEvent p -> "plan:" + p.steps().size() + " steps";
             case StepStartEvent s -> "step-start:" + s.stepNumber();
-            case StepCompleteEvent s -> "step-complete:" + s.stepNumber();
+            case StepCompleteEvent s -> "step-complete:" + s.stepNumber() + ":" + s.status();
             case FinalAnswerEvent f -> "final:" + f.content();
             case ErrorEvent e -> "error:" + e.message();
         };
