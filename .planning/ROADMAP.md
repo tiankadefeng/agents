@@ -233,8 +233,14 @@ Plans:
   3. top-K=2 剪枝生效，被剪枝的分支在前端有视觉标识（如灰色或删除线）
   4. 最终答案从存活分支中选出最优路径
 
-**Plans**: 3 plans
+**Plans**: 2 plans
 **UI hint**: yes
+
+Plans:
+**Wave 1** *(parallel - no file conflicts)*
+
+- [ ] 08-01-PLAN.md - 后端核心（TotNodeEvent/TotPruneEvent + AgentEvent permits 扩展 + TreeOfThoughtsAgentPattern：BFS 逐层扩展 + LLM 评分 + top-K=2 剪枝 + 最优路径回溯 + 保险丝）
+- [ ] 08-02-PLAN.md - 前端增强（类型更新 + useTotTree 树重建 + useSSEStream 路由 + ReasoningPanel 层-列树状布局 + PatternSelector 启用 + patternDetails 填充）
 
 ### Phase 9: Reflexion Pattern
 
