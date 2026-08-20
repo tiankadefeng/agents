@@ -12,6 +12,7 @@ const detail = computed(() => PATTERN_DETAILS[props.patternId])
 <template>
   <div v-if="detail" class="pattern-description-card">
     <div class="card-title">{{
+          patternId === 'tot' ? 'Tree of Thoughts 树状思维' :
           patternId === 'planExecute' ? 'Plan-and-Execute 计划与执行' :
           patternId === 'selfAsk' ? 'Self-Ask 自问自答' :
           patternId === 'react' ? 'ReAct 推理+行动' :
