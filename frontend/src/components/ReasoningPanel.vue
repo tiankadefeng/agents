@@ -3,6 +3,7 @@ import { shallowRef, computed } from 'vue'
 import { Check } from '@element-plus/icons-vue'
 import type { StreamStatus } from '@/types/sse'
 import type { AgentEvent, ReasoningEvent, ToolCallEvent, ToolResultEvent, SubQuestionEvent, SubAnswerEvent, PlanEvent, StepStartEvent, StepCompleteEvent } from '@/types/agent'
+import type { TotTree } from '@/composables/useTotTree'
 import ToolCallEventCard from './ToolCallEventCard.vue'
 import ToolResultEventCard from './ToolResultEventCard.vue'
 
@@ -10,6 +11,9 @@ const props = defineProps<{
   reasoningText: string
   status: StreamStatus
   events?: AgentEvent[]
+  // Phase 8 新增
+  totTree?: TotTree
+  selectedPattern?: string
 }>()
 
 // Default collapsed (D-03)
@@ -52,6 +56,35 @@ function isReplan(index: number): boolean {
   const prevEv = props.events?.[index - 1]
   return !!(prevEv && 'steps' in prevEv)
 }
+
+// Phase 8: ToT 树状渲染模式 -- 选中 tot 且树有根节点时启用
+const isTotMode = computed(() =>
+  props.selectedPattern === 'tot'
+  && !!props.totTree
+  && props.totTree.rootNodes.value.length > 0
+)
+
+// Phase 8: 层级列表 [-1, 0, 1, ..., maxLevel]（-1 = 原始问题根节点）
+const totLevels = computed(() => {
+  if (!isTotMode.value || !props.totTree) return []
+  const levels = [-1]
+  for (const n of props.totTree.nodeMap.value.values()) {
+    if (n.level > levels[levels.length - 1]) levels.push(n.level)
+  }
+  return levels
+})
+
+// Phase 8: 判断节点是否在最优路径上
+function isOptimalPath(nodeId: number): boolean {
+  return props.totTree?.getOptimalPath().some(n => n.nodeId === nodeId) ?? false
+}
+
+// Phase 8: 评分徽章三段配色（>=7 金 / 4-6 琥珀 / <=3 红）
+function scoreClass(score: number): string {
+  if (score >= 7) return 'high'
+  if (score >= 4) return 'mid'
+  return 'low'
+}
 </script>
 
 <template>
@@ -88,6 +121,32 @@ function isReplan(index: number): boolean {
           暂无推理过程。提交问题后，这里会流式显示 DeepSeek 的思考链（reasoning_content）。
         </div>
         </template>
+
+      <!-- Phase 8: ToT 树状层-列布局 -->
+      <div v-else-if="isTotMode" class="tot-tree-container">
+        <div v-for="level in totLevels" :key="level" class="tot-level">
+          <div class="tot-level-label">{{ level === -1 ? '原始问题' : `Level ${level}` }}</div>
+          <div
+            v-for="node in props.totTree!.getNodesByLevel(level)"
+            :key="node.nodeId"
+            class="tot-node-card"
+            :class="{
+              'pruned': node.pruned,
+              'optimal-path': isOptimalPath(node.nodeId),
+            }"
+          >
+            <div v-if="level !== -1" class="tot-node-score" :class="scoreClass(node.score)">
+              {{ node.score }}/10
+            </div>
+            <div class="tot-node-thought">{{ node.thought }}</div>
+            <div v-if="node.pruned" class="tot-pruned-label">已剪枝</div>
+          </div>
+        </div>
+      </div>
+      <!-- 最优路径图例（流式完成后路径确定即显示） -->
+      <div v-if="isTotMode && props.totTree!.getOptimalPath().length > 0" class="tot-optimal-legend">
+        <span class="legend-dot"></span> 最优路径
+      </div>
 
       <!-- Phase 5: vertical timeline (ReAct mode) -->
       <div v-else class="timeline">
@@ -372,5 +431,92 @@ function isReplan(index: number): boolean {
   color: #909399;
   padding: 0 12px;
   white-space: nowrap;
+}
+
+/* Phase 8: ToT 树状层-列布局 */
+.tot-tree-container {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  padding: 16px 0;
+  overflow-x: auto;
+}
+.tot-level {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 200px;
+  max-width: 280px;
+}
+.tot-level-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #909399;
+  text-align: center;
+  margin-bottom: 8px;
+}
+.tot-node-card {
+  border: 1px solid #E4E7ED;
+  border-radius: 6px;
+  background: #FFFFFF;
+  padding: 16px;
+  position: relative;
+  transition: all 0.3s;
+}
+.tot-node-card.pruned {
+  background: #F5F7FA;
+  opacity: 0.5;
+  text-decoration: line-through;
+  color: #C0C4CC;
+}
+/* optimal-path 规则在 pruned 之后 -- 同节点重叠时金色边框优先 */
+.tot-node-card.optimal-path {
+  border-color: #F59E0B;
+  box-shadow: 0 0 0 1.5px #F59E0B;
+}
+.tot-node-score {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 1px 8px;
+  min-width: 24px;
+  text-align: center;
+}
+.tot-node-score.high { background: #F59E0B; }  /* >=7 金 */
+.tot-node-score.mid  { background: #E6A23C; }  /* 4-6 琥珀 */
+.tot-node-score.low  { background: #F56C6C; }  /* <=3 红 */
+.tot-node-thought {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #555555;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-height: 120px;
+  overflow-y: auto;
+}
+.tot-pruned-label {
+  font-size: 12px;
+  color: #C0C4CC;
+  margin-top: 4px;
+}
+.tot-optimal-legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #F59E0B;
+  margin-top: 12px;
+  padding: 8px 16px;
+}
+.tot-optimal-legend .legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #F59E0B;
 }
 </style>
