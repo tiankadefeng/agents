@@ -29,7 +29,7 @@ export interface AgentRequest {
 
 /**
  * AgentEvent - discriminated union mirroring backend sealed interface
- * com.agents.agent.core.AgentEvent and its 9 record subtypes.
+ * com.agents.agent.core.AgentEvent and its 12 record subtypes.
  *
  * Discriminant: SSE event field (= Java class simple name, PascalCase).
  * Phase 2 D-01 推翻 Phase 1 D-02 的 event=message + data.type 方案。
@@ -43,6 +43,8 @@ export type AgentEvent =
   | PlanEvent
   | StepStartEvent
   | StepCompleteEvent
+  | TotNodeEvent        // Phase 8 新增
+  | TotPruneEvent       // Phase 8 新增
   | FinalAnswerEvent
   | ErrorEvent
 
@@ -141,6 +143,31 @@ export interface StepCompleteEvent {
   stepNumber: number
   status: StepStatus
   result: string        // Phase 7 新增
+}
+
+/**
+ * TotNodeEvent - mirrors backend com.agents.agent.core.TotNodeEvent.
+ * Tree of Thoughts 树节点 (Phase 8 用).
+ * level=-1 表示根节点（原始问题），parentId 为 null 表示根节点。
+ */
+export interface TotNodeEvent {
+  ts: InstantString
+  level: number
+  nodeId: number
+  thought: string
+  score: number
+  parentId: number | null
+}
+
+/**
+ * TotPruneEvent - mirrors backend com.agents.agent.core.TotPruneEvent.
+ * Tree of Thoughts 剪枝事件 (Phase 8 用).
+ */
+export interface TotPruneEvent {
+  ts: InstantString
+  level: number
+  prunedNodeIds: number[]
+  reason: string
 }
 
 /**

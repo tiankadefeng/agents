@@ -12,12 +12,14 @@ import type {
   PlanEvent,
   StepStartEvent,
   StepCompleteEvent,
+  TotNodeEvent,
+  TotPruneEvent,
 } from '@/types/agent'
 
 /**
  * SSE stream options - Phase 2 D-01 event-name routing.
  *
- * Phase 7 routing covers 10 SSE event names:
+ * Phase 8 routing covers 12 SSE event names:
  * - ReasoningEvent -> onReasoning
  * - FinalAnswerEvent -> onFinal
  * - ErrorEvent -> onError
@@ -28,6 +30,8 @@ import type {
  * - PlanEvent -> onPlan (Phase 7 Plan-and-Execute)
  * - StepStartEvent -> onStepStart (Phase 7 Plan-and-Execute)
  * - StepCompleteEvent -> onStepComplete (Phase 7 Plan-and-Execute)
+ * - TotNodeEvent -> onTotNode (Phase 8 Tree of Thoughts)
+ * - TotPruneEvent -> onTotPrune (Phase 8 Tree of Thoughts)
  *
  * Other event names are defined in the type system
  * but not emitted yet. They will be added in Phase 8+ when patterns
@@ -51,6 +55,9 @@ export interface SSEStreamOptions {
   onPlan?: (ev: PlanEvent) => void
   onStepStart?: (ev: StepStartEvent) => void
   onStepComplete?: (ev: StepCompleteEvent) => void
+  // Phase 8 新增
+  onTotNode?: (ev: TotNodeEvent) => void
+  onTotPrune?: (ev: TotPruneEvent) => void
   signal?: AbortSignal
 }
 
@@ -158,6 +165,12 @@ export async function startSSEStream(
             break
           case 'StepCompleteEvent':
             options.onStepComplete?.(data as StepCompleteEvent)
+            break
+          case 'TotNodeEvent':
+            options.onTotNode?.(data as TotNodeEvent)
+            break
+          case 'TotPruneEvent':
+            options.onTotPrune?.(data as TotPruneEvent)
             break
           default:
             // Silently ignore unmapped event names (forward compat,

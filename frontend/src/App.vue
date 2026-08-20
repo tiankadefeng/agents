@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { shallowRef, ref, watch } from 'vue'
 import { startSSEStream } from '@/composables/useSSEStream'
+import { useTotTree } from '@/composables/useTotTree'
 import type { StreamStatus } from '@/types/sse'
 import type { AgentRequest, AgentEvent } from '@/types/agent'
 import PatternSelector from '@/components/PatternSelector.vue'
@@ -20,6 +21,9 @@ const errorAlert = ref<string>('')
 
 // AgentEvent list for ReasoningPanel vertical timeline (Phase 5)
 const agentEvents = ref<AgentEvent[]>([])
+
+// ToT 树结构状态 (Phase 8)
+const totTree = useTotTree()
 
 // Status tracking
 const status = ref<StreamStatus>('idle')
@@ -55,6 +59,7 @@ async function submit(question: string) {
   finalText.value = ''
   errorAlert.value = ''
   agentEvents.value = []
+  totTree.clear() // Phase 8: 每次提交重置树状态
   status.value = 'thinking'
   streamAborted = false
   abortController = new AbortController()
@@ -100,6 +105,15 @@ async function submit(question: string) {
           agentEvents.value = [...agentEvents.value, ev]
         },
         onStepComplete: (ev) => {
+          agentEvents.value = [...agentEvents.value, ev]
+        },
+        // Phase 8: ToT 树事件 -- 双写：树状态 + 事件时间线
+        onTotNode: (ev) => {
+          totTree.addNode(ev)
+          agentEvents.value = [...agentEvents.value, ev]
+        },
+        onTotPrune: (ev) => {
+          totTree.markPruned(ev)
           agentEvents.value = [...agentEvents.value, ev]
         },
         onFinal: (content, _ev) => {
@@ -180,7 +194,13 @@ function clear() {
             show-icon
           />
 
-          <ReasoningPanel :reasoning-text="reasoningText" :events="agentEvents" :status="status" />
+          <ReasoningPanel
+            :reasoning-text="reasoningText"
+            :events="agentEvents"
+            :status="status"
+            :tot-tree="totTree"
+            :selected-pattern="selectedPatternId"
+          />
 
           <FinalAnswer :final-text="finalText" :status="status" />
         </div>
