@@ -20,7 +20,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 5: ReAct Pattern** - 最高风险模式，手动工具调用循环，验证 Tool Layer (completed 2026-08-13)
 - [x] **Phase 6: Self-Ask Pattern** - 子问题->子答案链式时间线 (completed 2026-08-14)
 - [x] **Phase 7: Plan-and-Execute Pattern** - 两阶段（Planner + Executor）+ replan-on-failure (completed 2026-08-17)
-- [ ] **Phase 8: Tree of Thoughts Pattern** - 分支生成 + LLM 评估 + 贪心剪枝
+- [x] **Phase 8: Tree of Thoughts Pattern** - 分支生成 + LLM 评估 + 贪心剪枝 (completed 2026-08-20)
 - [ ] **Phase 9: Reflexion Pattern** - generator + LLM-as-judge + reflector + retry
 - [ ] **Phase 10: Role-playing Pattern** - 3 角色（PM/Dev/Tester）5 轮对话
 - [ ] **Phase 11: MCP Integration** - 接入外部 MCP Server，工具生态扩展
@@ -239,8 +239,8 @@ Plans:
 Plans:
 **Wave 1** *(parallel - no file conflicts)*
 
-- [ ] 08-01-PLAN.md - 后端核心（TotNodeEvent/TotPruneEvent + AgentEvent permits 扩展 + TreeOfThoughtsAgentPattern：BFS 逐层扩展 + LLM 评分 + top-K=2 剪枝 + 最优路径回溯 + 保险丝）
-- [ ] 08-02-PLAN.md - 前端增强（类型更新 + useTotTree 树重建 + useSSEStream 路由 + ReasoningPanel 层-列树状布局 + PatternSelector 启用 + patternDetails 填充）
+- [x] 08-01-PLAN.md - 后端核心（TotNodeEvent/TotPruneEvent + AgentEvent permits 扩展 + TreeOfThoughtsAgentPattern：BFS 逐层扩展 + LLM 评分 + top-K=2 剪枝 + 最优路径回溯 + 保险丝）
+- [x] 08-02-PLAN.md - 前端增强（类型更新 + useTotTree 树重建 + useSSEStream 路由 + ReasoningPanel 层-列树状布局 + PatternSelector 启用 + patternDetails 填充）
 
 ### Phase 9: Reflexion Pattern
 
@@ -303,7 +303,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 4 -> 5 -> 6 -> 7 -> 8 -> 
 | 5. ReAct Pattern | 3/3 | Complete   | 2026-08-13 |
 | 6. Self-Ask Pattern | 2/2 | Complete   | 2026-08-14 |
 | 7. Plan-and-Execute Pattern | 2/2 | Complete   | 2026-08-17 |
-| 8. Tree of Thoughts Pattern | 0/0 | Not started | - |
+| 8. Tree of Thoughts Pattern | 2/2 | Complete   | 2026-08-20 |
 | 9. Reflexion Pattern | 0/0 | Not started | - |
 | 10. Role-playing Pattern | 0/0 | Not started | - |
 | 11. MCP Integration | 0/0 | Not started | - |
