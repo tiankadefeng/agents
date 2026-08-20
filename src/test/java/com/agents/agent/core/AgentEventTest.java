@@ -9,11 +9,11 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for {@link AgentEvent} sealed interface and its 10 record subtypes.
+ * Unit tests for {@link AgentEvent} sealed interface and its 12 record subtypes.
  *
  * <p>Verifies:
  * <ul>
- *   <li>D-04: All 10 records can be instantiated and implement AgentEvent</li>
+ *   <li>D-04: All 12 records can be instantiated and implement AgentEvent</li>
  *   <li>D-02: ts() accessor is available on all records (only common method)</li>
  *   <li>D-04: Record component accessors return values passed to constructor</li>
  * </ul>
@@ -23,10 +23,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 class AgentEventTest {
 
     @Test
-    void shouldInstantiateAllTenEventRecords() {
+    void shouldInstantiateAllTwelveEventRecords() {
         Instant now = Instant.now();
 
-        // D-04: 10 record subtypes, each implements AgentEvent
+        // D-04: 12 record subtypes, each implements AgentEvent (Phase 8: +TotNodeEvent, +TotPruneEvent)
         AgentEvent reasoning = new ReasoningEvent(now, "thinking...");
         AgentEvent toolCall = new ToolCallEvent(now, "weather", Map.of("city", "Beijing"));
         AgentEvent toolResult = new ToolResultEvent(now, "weather", "25°C", false);
@@ -35,10 +35,12 @@ class AgentEventTest {
         AgentEvent plan = new PlanEvent(now, List.of(new PlanEvent.Step(1, "Step 1: search", "search result")));
         AgentEvent stepStart = new StepStartEvent(now, 1, "searching");
         AgentEvent stepComplete = new StepCompleteEvent(now, 1, "done", "result text");
+        AgentEvent totNode = new TotNodeEvent(now, 0, 1, "分支思考内容", 8, null);
+        AgentEvent totPrune = new TotPruneEvent(now, 0, List.of(2, 3), "评分低于 top-K=2 阈值");
         AgentEvent finalAnswer = new FinalAnswerEvent(now, "The answer is 42");
         AgentEvent error = new ErrorEvent(now, "Something went wrong");
 
-        // All 10 instances are AgentEvent subtypes
+        // All 12 instances are AgentEvent subtypes
         assertThat(reasoning).isInstanceOf(AgentEvent.class);
         assertThat(toolCall).isInstanceOf(AgentEvent.class);
         assertThat(toolResult).isInstanceOf(AgentEvent.class);
@@ -47,6 +49,8 @@ class AgentEventTest {
         assertThat(plan).isInstanceOf(AgentEvent.class);
         assertThat(stepStart).isInstanceOf(AgentEvent.class);
         assertThat(stepComplete).isInstanceOf(AgentEvent.class);
+        assertThat(totNode).isInstanceOf(AgentEvent.class);
+        assertThat(totPrune).isInstanceOf(AgentEvent.class);
         assertThat(finalAnswer).isInstanceOf(AgentEvent.class);
         assertThat(error).isInstanceOf(AgentEvent.class);
 
@@ -59,12 +63,16 @@ class AgentEventTest {
         assertThat(plan.ts()).isNotNull();
         assertThat(stepStart.ts()).isNotNull();
         assertThat(stepComplete.ts()).isNotNull();
+        assertThat(totNode.ts()).isNotNull();
+        assertThat(totPrune.ts()).isNotNull();
         assertThat(finalAnswer.ts()).isNotNull();
         assertThat(error.ts()).isNotNull();
 
         // ts() returns the exact Instant passed to constructor
         assertThat(reasoning.ts()).isEqualTo(now);
         assertThat(subAnswer.ts()).isEqualTo(now);
+        assertThat(totNode.ts()).isEqualTo(now);
+        assertThat(totPrune.ts()).isEqualTo(now);
         assertThat(error.ts()).isEqualTo(now);
     }
 
@@ -128,6 +136,24 @@ class AgentEventTest {
         // ErrorEvent: ts + message (no stacktrace - T-2-02)
         ErrorEvent error = new ErrorEvent(now, "error message");
         assertThat(error.message()).isEqualTo("error message");
+
+        // TotNodeEvent: ts + level + nodeId + thought + score + parentId (Phase 8)
+        TotNodeEvent totNode = new TotNodeEvent(now, 1, 4, "先尝试乘法组合", 9, 2);
+        assertThat(totNode.level()).isEqualTo(1);
+        assertThat(totNode.nodeId()).isEqualTo(4);
+        assertThat(totNode.thought()).isEqualTo("先尝试乘法组合");
+        assertThat(totNode.score()).isEqualTo(9);
+        assertThat(totNode.parentId()).isEqualTo(2);
+
+        // TotPruneEvent: ts + level + prunedNodeIds + reason (Phase 8)
+        TotPruneEvent totPrune = new TotPruneEvent(now, 1, List.of(5, 9), "评分低于阈值");
+        assertThat(totPrune.level()).isEqualTo(1);
+        assertThat(totPrune.prunedNodeIds()).containsExactly(5, 9);
+        assertThat(totPrune.reason()).isEqualTo("评分低于阈值");
+
+        // 根节点 parentId 为 null
+        TotNodeEvent root = new TotNodeEvent(now, -1, 0, "原始问题", 0, null);
+        assertThat(root.parentId()).isNull();
     }
 
     @Test
@@ -146,6 +172,8 @@ class AgentEventTest {
             new PlanEvent(now, List.of(new PlanEvent.Step(1, "d", "o"))),
             new StepStartEvent(now, 1, "d"),
             new StepCompleteEvent(now, 1, "s", "r"),
+            new TotNodeEvent(now, 0, 1, "b", 8, null),
+            new TotPruneEvent(now, 0, List.of(2), "low score"),
             new FinalAnswerEvent(now, "a"),
             new ErrorEvent(now, "e"),
         };
@@ -172,6 +200,8 @@ class AgentEventTest {
             case PlanEvent p -> "plan:" + p.steps().size() + " steps";
             case StepStartEvent s -> "step-start:" + s.stepNumber();
             case StepCompleteEvent s -> "step-complete:" + s.stepNumber() + ":" + s.status();
+            case TotNodeEvent t -> "tot-node:" + t.nodeId() + ":" + t.score();
+            case TotPruneEvent t -> "tot-prune:" + t.prunedNodeIds().size();
             case FinalAnswerEvent f -> "final:" + f.content();
             case ErrorEvent e -> "error:" + e.message();
         };
