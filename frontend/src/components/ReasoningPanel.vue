@@ -2,7 +2,7 @@
 import { shallowRef, computed } from 'vue'
 import { Check } from '@element-plus/icons-vue'
 import type { StreamStatus } from '@/types/sse'
-import type { AgentEvent, ReasoningEvent, ToolCallEvent, ToolResultEvent, SubQuestionEvent, SubAnswerEvent, PlanEvent, StepStartEvent, StepCompleteEvent, ReflexionAttemptEvent, ReflexionEvaluateEvent, ReflexionReflectEvent } from '@/types/agent'
+import type { AgentEvent, ReasoningEvent, ToolCallEvent, ToolResultEvent, SubQuestionEvent, SubAnswerEvent, PlanEvent, StepStartEvent, StepCompleteEvent, ReflexionAttemptEvent, ReflexionEvaluateEvent, ReflexionReflectEvent, RolePmEvent, RoleDevEvent, RoleTesterEvent } from '@/types/agent'
 import type { TotTree } from '@/composables/useTotTree'
 import ToolCallEventCard from './ToolCallEventCard.vue'
 import ToolResultEventCard from './ToolResultEventCard.vue'
@@ -126,6 +126,43 @@ function isPassed(score: number): boolean {
 function isLastRound(round: number): boolean {
   return reflexionRounds.value.length > 0
     && round === reflexionRounds.value[reflexionRounds.value.length - 1]
+}
+
+// Phase 10: Role-playing 轮次分组渲染模式 -- 选中 roleplay 且事件列表包含 Role*Event
+const isRoleplayMode = computed(() =>
+  props.selectedPattern === 'roleplay'
+  && !!props.events
+  && props.events.some(ev => 'role' in ev && 'content' in ev)
+)
+
+// Phase 10: 提取 Role-playing 所有 round 号，去重排序
+const roleplayRounds = computed(() => {
+  if (!isRoleplayMode.value || !props.events) return []
+  const rounds = new Set<number>()
+  for (const ev of props.events) {
+    if ('round' in ev && 'role' in ev) {
+      rounds.add((ev as any).round as number)
+    }
+  }
+  return Array.from(rounds).sort()
+})
+
+// Phase 10: 获取指定 round 的 Role-playing 角色事件（按到达顺序 = PM->Dev->Tester）
+function getRoleEventsByRound(round: number): AgentEvent[] {
+  return props.events?.filter(ev => 'round' in ev && 'role' in ev && (ev as any).round === round) ?? []
+}
+
+// Phase 10: 角色彩色配置映射（头像符号 + 显示名 + 主题色）
+// PM=蓝色 📋 / Dev=绿色 💻 / Tester=橙色 🔍 (per CONTEXT Claude's Discretion 彩色头像设计)
+const ROLE_CONFIG: Record<string, { icon: string; name: string; color: string }> = {
+  PM: { icon: '📋', name: '产品经理', color: '#1D70F5' },
+  Dev: { icon: '💻', name: '开发者', color: '#15AC0C' },
+  Tester: { icon: '🔍', name: '测试工程师', color: '#FAB215' },
+}
+
+// Phase 10: 获取角色配置（未知角色降级为灰色默认配置）
+function roleConfig(role: string): { icon: string; name: string; color: string } {
+  return ROLE_CONFIG[role] ?? { icon: '👤', name: role, color: '#909399' }
 }
 </script>
 
