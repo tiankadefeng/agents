@@ -279,6 +279,37 @@ function roleConfig(role: string): { icon: string; name: string; color: string }
         </div>
       </template>
 
+      <!-- Phase 10: Role-playing 轮次分组对话布局 -->
+      <template v-else-if="isRoleplayMode">
+        <div class="roleplay-container">
+          <template v-for="round in roleplayRounds" :key="round">
+            <!-- 轮次分隔线 -->
+            <div class="round-divider">
+              <span class="round-divider-text">Round {{ round }}</span>
+            </div>
+
+            <!-- 该轮的角色对话（PM -> Dev -> Tester 按到达顺序） -->
+            <div class="roleplay-round-group">
+              <template v-for="(ev, i) in getRoleEventsByRound(round)" :key="i">
+                <!-- RolePmEvent / RoleDevEvent / RoleTesterEvent 统一渲染为角色卡片 -->
+                <div v-if="'role' in ev && 'content' in ev" class="roleplay-card" :style="{ borderLeftColor: roleConfig((ev as any).role).color }">
+                  <div class="roleplay-header">
+                    <span class="roleplay-avatar" :style="{ background: roleConfig((ev as any).role).color }">
+                      {{ roleConfig((ev as any).role).icon }}
+                    </span>
+                    <span class="roleplay-name" :style="{ color: roleConfig((ev as any).role).color }">
+                      {{ roleConfig((ev as any).role).name }} ({{ (ev as any).role }})
+                    </span>
+                    <span class="roleplay-round-tag">第 {{ round }} 轮</span>
+                  </div>
+                  <div class="roleplay-content">{{ (ev as RolePmEvent | RoleDevEvent | RoleTesterEvent).content }}</div>
+                </div>
+              </template>
+            </div>
+          </template>
+        </div>
+      </template>
+
       <!-- Phase 5: vertical timeline (default) -->
       <template v-else>
         <div class="timeline">
@@ -711,4 +742,61 @@ function roleConfig(role: string): { icon: string; name: string; color: string }
 .evaluate-feedback { font-size: 14px; color: #555555; line-height: 1.5; white-space: pre-wrap; word-wrap: break-word; }
 .evaluate-passed { font-size: 12px; font-weight: 600; margin-top: 8px; padding: 2px 8px; border-radius: 3px; display: inline-block; background: #E3F6E1; color: #15AC0C; }
 .evaluate-failed { font-size: 12px; font-weight: 600; margin-top: 8px; padding: 2px 8px; border-radius: 3px; display: inline-block; background: #FCE5E7; color: #D70016; }
+
+/* Phase 10: Role-playing 轮次分组对话布局 */
+.roleplay-container {
+  padding: 12px 0;
+}
+.roleplay-round-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.roleplay-round-group:last-child {
+  margin-bottom: 0;
+}
+.roleplay-card {
+  border: 1px solid #E4E7ED;
+  border-left: 3px solid #909399; /* 动态覆盖为角色色 */
+  border-radius: 6px;
+  background: #FFFFFF;
+  padding: 12px 16px;
+}
+.roleplay-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.roleplay-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 14px;
+  color: #FFFFFF;
+  flex-shrink: 0;
+}
+.roleplay-name {
+  font-size: 13px;
+  font-weight: 600;
+}
+.roleplay-round-tag {
+  margin-left: auto;
+  font-size: 11px;
+  color: #909399;
+  background: #F5F7FA;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.roleplay-content {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #555555;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
 </style>
