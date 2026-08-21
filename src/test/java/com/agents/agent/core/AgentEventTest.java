@@ -9,11 +9,11 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for {@link AgentEvent} sealed interface and its 12 record subtypes.
+ * Unit tests for {@link AgentEvent} sealed interface and its 15 record subtypes.
  *
  * <p>Verifies:
  * <ul>
- *   <li>D-04: All 12 records can be instantiated and implement AgentEvent</li>
+ *   <li>D-04: All 15 records can be instantiated and implement AgentEvent</li>
  *   <li>D-02: ts() accessor is available on all records (only common method)</li>
  *   <li>D-04: Record component accessors return values passed to constructor</li>
  * </ul>
@@ -23,10 +23,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 class AgentEventTest {
 
     @Test
-    void shouldInstantiateAllTwelveEventRecords() {
+    void shouldInstantiateAllFifteenEventRecords() {
         Instant now = Instant.now();
 
-        // D-04: 12 record subtypes, each implements AgentEvent (Phase 8: +TotNodeEvent, +TotPruneEvent)
+        // D-04: 15 record subtypes, each implements AgentEvent (Phase 9: +ReflexionAttemptEvent, +ReflexionEvaluateEvent, +ReflexionReflectEvent)
         AgentEvent reasoning = new ReasoningEvent(now, "thinking...");
         AgentEvent toolCall = new ToolCallEvent(now, "weather", Map.of("city", "Beijing"));
         AgentEvent toolResult = new ToolResultEvent(now, "weather", "25°C", false);
@@ -37,10 +37,13 @@ class AgentEventTest {
         AgentEvent stepComplete = new StepCompleteEvent(now, 1, "done", "result text");
         AgentEvent totNode = new TotNodeEvent(now, 0, 1, "分支思考内容", 8, null);
         AgentEvent totPrune = new TotPruneEvent(now, 0, List.of(2, 3), "评分低于 top-K=2 阈值");
+        AgentEvent reflexionAttempt = new ReflexionAttemptEvent(now, 1, "attempt answer");
+        AgentEvent reflexionEvaluate = new ReflexionEvaluateEvent(now, 1, 8, "good answer");
+        AgentEvent reflexionReflect = new ReflexionReflectEvent(now, 1, "improve clarity");
         AgentEvent finalAnswer = new FinalAnswerEvent(now, "The answer is 42");
         AgentEvent error = new ErrorEvent(now, "Something went wrong");
 
-        // All 12 instances are AgentEvent subtypes
+        // All 15 instances are AgentEvent subtypes
         assertThat(reasoning).isInstanceOf(AgentEvent.class);
         assertThat(toolCall).isInstanceOf(AgentEvent.class);
         assertThat(toolResult).isInstanceOf(AgentEvent.class);
@@ -51,6 +54,9 @@ class AgentEventTest {
         assertThat(stepComplete).isInstanceOf(AgentEvent.class);
         assertThat(totNode).isInstanceOf(AgentEvent.class);
         assertThat(totPrune).isInstanceOf(AgentEvent.class);
+        assertThat(reflexionAttempt).isInstanceOf(AgentEvent.class);
+        assertThat(reflexionEvaluate).isInstanceOf(AgentEvent.class);
+        assertThat(reflexionReflect).isInstanceOf(AgentEvent.class);
         assertThat(finalAnswer).isInstanceOf(AgentEvent.class);
         assertThat(error).isInstanceOf(AgentEvent.class);
 
@@ -65,6 +71,9 @@ class AgentEventTest {
         assertThat(stepComplete.ts()).isNotNull();
         assertThat(totNode.ts()).isNotNull();
         assertThat(totPrune.ts()).isNotNull();
+        assertThat(reflexionAttempt.ts()).isNotNull();
+        assertThat(reflexionEvaluate.ts()).isNotNull();
+        assertThat(reflexionReflect.ts()).isNotNull();
         assertThat(finalAnswer.ts()).isNotNull();
         assertThat(error.ts()).isNotNull();
 
@@ -73,6 +82,9 @@ class AgentEventTest {
         assertThat(subAnswer.ts()).isEqualTo(now);
         assertThat(totNode.ts()).isEqualTo(now);
         assertThat(totPrune.ts()).isEqualTo(now);
+        assertThat(reflexionAttempt.ts()).isEqualTo(now);
+        assertThat(reflexionEvaluate.ts()).isEqualTo(now);
+        assertThat(reflexionReflect.ts()).isEqualTo(now);
         assertThat(error.ts()).isEqualTo(now);
     }
 
@@ -151,6 +163,22 @@ class AgentEventTest {
         assertThat(totPrune.prunedNodeIds()).containsExactly(5, 9);
         assertThat(totPrune.reason()).isEqualTo("评分低于阈值");
 
+        // ReflexionAttemptEvent: ts + round + answer (Phase 9)
+        ReflexionAttemptEvent reflexionAttempt = new ReflexionAttemptEvent(now, 1, "attempt answer");
+        assertThat(reflexionAttempt.round()).isEqualTo(1);
+        assertThat(reflexionAttempt.answer()).isEqualTo("attempt answer");
+
+        // ReflexionEvaluateEvent: ts + round + score + feedback (Phase 9)
+        ReflexionEvaluateEvent reflexionEvaluate = new ReflexionEvaluateEvent(now, 1, 8, "good");
+        assertThat(reflexionEvaluate.round()).isEqualTo(1);
+        assertThat(reflexionEvaluate.score()).isEqualTo(8);
+        assertThat(reflexionEvaluate.feedback()).isEqualTo("good");
+
+        // ReflexionReflectEvent: ts + round + reflection (Phase 9)
+        ReflexionReflectEvent reflexionReflect = new ReflexionReflectEvent(now, 1, "improve");
+        assertThat(reflexionReflect.round()).isEqualTo(1);
+        assertThat(reflexionReflect.reflection()).isEqualTo("improve");
+
         // 根节点 parentId 为 null
         TotNodeEvent root = new TotNodeEvent(now, -1, 0, "原始问题", 0, null);
         assertThat(root.parentId()).isNull();
@@ -174,6 +202,9 @@ class AgentEventTest {
             new StepCompleteEvent(now, 1, "s", "r"),
             new TotNodeEvent(now, 0, 1, "b", 8, null),
             new TotPruneEvent(now, 0, List.of(2), "low score"),
+            new ReflexionAttemptEvent(now, 1, "attempt answer"),
+            new ReflexionEvaluateEvent(now, 1, 8, "good"),
+            new ReflexionReflectEvent(now, 1, "improve"),
             new FinalAnswerEvent(now, "a"),
             new ErrorEvent(now, "e"),
         };
@@ -202,6 +233,9 @@ class AgentEventTest {
             case StepCompleteEvent s -> "step-complete:" + s.stepNumber() + ":" + s.status();
             case TotNodeEvent t -> "tot-node:" + t.nodeId() + ":" + t.score();
             case TotPruneEvent t -> "tot-prune:" + t.prunedNodeIds().size();
+            case ReflexionAttemptEvent r -> "reflexion-attempt:" + r.round() + ":" + r.answer();
+            case ReflexionEvaluateEvent r -> "reflexion-evaluate:" + r.round() + ":" + r.score();
+            case ReflexionReflectEvent r -> "reflexion-reflect:" + r.round() + ":" + r.reflection();
             case FinalAnswerEvent f -> "final:" + f.content();
             case ErrorEvent e -> "error:" + e.message();
         };

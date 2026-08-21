@@ -21,7 +21,7 @@ import java.time.Duration;
  * <p>新增模式只需新建一个 bean（{@code @Component} 或 {@code @TestConfiguration} + {@code @Import}），
  * 无需改控制器或注册表 - 这是 Phase 2 架构的核心价值。
  *
- * <p>模式计数 = 6（cot + react + selfAsk + planExecute + tot + mock），Phase 8 新增 tot。
+ * <p>模式计数 = 7（cot + react + selfAsk + planExecute + tot + reflexion + mock），Phase 9 新增 reflexion。
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(MockPattern.class)
@@ -39,12 +39,12 @@ class PatternControllerWithMockTest {
 
         // SC#4: @Import(MockPattern.class) 后 MockPattern 自动注册到 AgentRegistry，
         // GET /api/patterns 返回含 cot（Phase 3）、react（Phase 5）、selfAsk（Phase 6）、
-        // planExecute（Phase 7）、tot（Phase 8）和 mock 的模式列表
+        // planExecute（Phase 7）、tot（Phase 8）、reflexion（Phase 9）和 mock 的模式列表
         client.get().uri("/api/patterns")
             .exchange()
             .expectStatus().isOk()
             .expectBody()
-.jsonPath("$.length()").isEqualTo(6)
+.jsonPath("$.length()").isEqualTo(7)
             .jsonPath("[?(@.id=='mock')].id").isNotEmpty()
             .jsonPath("[?(@.id=='mock')].displayName").isEqualTo("Mock 模式（验证用）")
             .jsonPath("[?(@.id=='mock')].description").isEqualTo("临时验证 Strategy + Plugin Registry，验证后移除。");
