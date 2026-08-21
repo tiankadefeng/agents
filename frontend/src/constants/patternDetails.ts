@@ -9,6 +9,8 @@ export interface PatternDetail {
   coreIdea: string
   /** Typical scenarios where this pattern applies */
   scenarios: string
+  /** Example questions for this pattern */
+  examples: string[]
 }
 
 /**
@@ -19,6 +21,12 @@ export const PATTERN_DETAILS: Record<string, PatternDetail> = {
   cot: {
     coreIdea: '思维链（Chain of Thought）是一种让模型"一步步思考"的推理模式。通过显式展示推理过程，提高复杂问题的准确率。',
     scenarios: '数学证明、逻辑推理、多步计算、需要中间步骤的问题。',
+    examples: [
+      '证明 √2 是无理数',
+      '鸡兔同笼：笼中共有35个头，94只脚，问鸡和兔各几只？',
+      '如果今天是周三，那么100天后是星期几？',
+      '用三段论推理：所有人类都会死，苏格拉底是人，所以？',
+    ],
   },
   react: {
     coreIdea: 'ReAct (Reasoning + Acting) 是一种结合推理与行动的 Agent 模式。'
@@ -26,6 +34,12 @@ export const PATTERN_DETAILS: Record<string, PatternDetail> = {
       + '形成 Thought -> Action -> Observation 循环，直到得出最终答案。',
     scenarios: '需要外部信息的问题 (如天气查询、实时数据)、多步工具调用任务、'
       + '需要从环境中获取反馈的推理任务。',
+    examples: [
+      '今天北京的气温是多少？适合户外跑步吗？',
+      '查找最近的科技新闻，并总结三条最重要的动态',
+      '计算 "12345 × 6789" 的结果',
+      '搜索"量子计算"的定义，并解释它和传统计算的区别',
+    ],
   },
   selfAsk: {
     coreIdea: 'Self-Ask (自问自答) 是一种将复杂问题分解为多个子问题的 Agent 模式。'
@@ -34,6 +48,12 @@ export const PATTERN_DETAILS: Record<string, PatternDetail> = {
       + '每个子问题就像知识链中的一个环节，环环相扣。',
     scenarios: '需要多跳推理的复杂问题 (如"蒙娜丽莎的画家还画过什么著名作品？")、'
       + '需要组合多个知识片段的问题、涉及多步事实查询的问题。',
+    examples: [
+      '蒙娜丽莎的画家还画过什么著名作品？',
+      '深圳和广州哪个城市人口更多？它们的GDP各是多少？',
+      '长江流经哪些省份？它最终注入哪个海？',
+      '《三体》的作者还写过哪些小说？这些小说获得过什么奖项？',
+    ],
   },
   planExecute: {
     coreIdea: 'Plan-and-Execute (计划与执行) 是一种将任务分解为"先规划、后执行"两阶段的 Agent 模式。'
@@ -41,6 +61,12 @@ export const PATTERN_DETAILS: Record<string, PatternDetail> = {
       + '步骤失败时自动重新规划剩余步骤，体现"计划会动态调整"的适应性。',
     scenarios: '需要多步骤规划的任务（如旅行计划、商业决策分析）、'
       + '需要分步执行且每步可独立完成的任务、需要动态调整计划的场景。',
+    examples: [
+      '帮我制定一个为期3天的北京旅游计划',
+      '分析电动汽车行业的投资前景，从市场规模、政策支持、竞争格局三方面入手',
+      '规划一个健康减脂方案：每周运动3次，控制饮食，持续2个月',
+      '写一篇关于人工智能的科普文章，先列提纲再逐段完成',
+    ],
   },
   tot: {
     coreIdea: 'Tree of Thoughts (树状思维) 是一种通过多分支探索和评估来寻找最优答案的 Agent 模式。'
@@ -52,6 +78,12 @@ export const PATTERN_DETAILS: Record<string, PatternDetail> = {
       + '规划类问题（如"最优周末出行方案"）、'
       + '需要权衡多个因素的决策问题（如"选择最佳投资方案"）、'
       + '解谜和搜索类问题（如"8 皇后问题"、"数独"）。',
+    examples: [
+      '如何用 1、3、4、6 通过加减乘除算出 24？请探索多种解法',
+      '周末想出去玩，考虑天气、交通、预算、兴趣四个因素，选最优方案',
+      '我有 10 万元闲钱，请分析股票、基金、定期存款三种方案的优劣',
+      '解数独：给定一个部分填写的 9×9 数独，找出所有可能的解',
+    ],
   },
   reflexion: {
     coreIdea: 'Reflexion（反思迭代）是一种让模型通过"尝试->评估->反思->改进"循环来自我纠错的 Agent 模式。'
@@ -63,6 +95,12 @@ export const PATTERN_DETAILS: Record<string, PatternDetail> = {
       + '需要多轮打磨的推理问题（如"证明一个数学定理"）、'
       + '需要自我纠错的复杂任务（如"设计一个算法并分析其复杂度"）、'
       + '从差到好逐步改进的开放性问题（如"为一款新产品撰写宣传文案"）。',
+    examples: [
+      '用 Python 写一个二分查找算法，然后优化时间和空间复杂度',
+      '为一款智能手表撰写产品宣传文案，要求不断迭代优化',
+      '证明 "任意两个奇数的平方差能被 8 整除"，请多轮审视推理过程',
+      '设计一个高并发秒杀系统的架构方案，并逐步改进不足之处',
+    ],
   },
   roleplay: {
     coreIdea: 'Role-playing（角色扮演）是一种让多个 AI 角色通过协作讨论来解决问题的 Agent 模式。'
@@ -73,5 +111,11 @@ export const PATTERN_DETAILS: Record<string, PatternDetail> = {
       + '需要需求/实现/验证多视角审视的任务（如"设计一个电商系统的架构"）、'
       + '需要多方权衡的决策问题（如"讨论一个高并发订单系统的设计方案"）、'
       + '教学演示团队协作流程的开放性问题（如"为一款新 App 制定完整开发计划"）。',
+    examples: [
+      '设计一个用户登录功能，包含邮箱注册、手机验证码登录、第三方登录',
+      '制定一个 RESTful API 接口规范，包含用户、商品、订单三个模块',
+      '设计一个电商系统的整体架构，讨论高并发、高可用方案',
+      '为一款在线教育 App 制定完整的开发计划，从需求到上线',
+    ],
   },
 }

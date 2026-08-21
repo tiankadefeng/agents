@@ -205,6 +205,7 @@ function clear() {
         <div class="main-content">
           <QuestionInput
             :streaming="status === 'thinking' || status === 'answering'"
+            :pattern-id="selectedPatternId"
             @submit="submit"
             @abort="abort"
             @clear="clear"
