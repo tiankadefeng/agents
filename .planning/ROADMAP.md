@@ -258,6 +258,16 @@ Plans:
 **Plans**: 3 plans
 **UI hint**: yes
 
+Plans:
+**Wave 1** *(parallel - no file conflicts)*
+
+- [ ] 09-01-PLAN.md - 后端核心（ReflexionAttempt/Evaluate/Reflect 事件 + AgentEvent permits 15 + ReflexionAgentPattern：Generator + LLM-as-judge Evaluator + Reflector 循环 + max_reflections=2 + epsilon 提前停止 + 单元测试）
+- [ ] 09-02-PLAN.md - 前端数据层（类型更新 + useSSEStream 路由 + App.vue 回调 + PatternSelector 启用 + patternDetails 填充）
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 09-03-PLAN.md - 前端 ReasoningPanel Reflexion round 分组渲染（round 分隔线 + Attempt/Evaluate/Reflect 卡片 + 评分三段配色 + 通过/不通过徽章）
+
 ### Phase 10: Role-playing Pattern
 
 **Goal**: 用户能选择 Role-playing 模式，看到 3 个角色（PM/Dev/Tester）按固定顺序 5 轮对话协作产出结论
