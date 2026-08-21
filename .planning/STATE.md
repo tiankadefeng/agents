@@ -74,6 +74,8 @@ Recent decisions affecting current work:
 - [Roadmap]: Phase 6 (research's "Remaining Patterns") split into 5 individual pattern phases (6-10) per fine granularity guidance - each pattern is a focused, teachable unit
 - [Roadmap]: Differentiators (research Phase 8) deferred to v2 - not in v1 roadmap
 - [Roadmap]: UI-11 (per-pattern visualization components) split across 7 pattern phases (3, 5-10) - each pattern phase delivers its own visualization component
+- [Phase 10]: Role-playing 模式由独立的第 16 次 LLM 调用（FinalAnswerEvent）产出结论，而非第 5 轮 Tester 发言 —— 用户选择的独立总结事件（D-04）
+- [Phase 10]: Role-playing 历史以纯文本 user message 传递（非 MessageChatMemory），避免与各角色独立 system prompt 冲突（D-02）
 
 ### Pending Todos
 
@@ -100,6 +102,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-21T10:30:00.000Z
-Stopped at: Phase 10 plans created and verified
-Resume file: .planning/phases/10-role-playing-pattern/10-01-PLAN.md
+Last session: 2026-08-21T12:25:00.000Z
+Stopped at: Phase 10 complete (3/3) — ready to discuss Phase 11
+Resume file: None
