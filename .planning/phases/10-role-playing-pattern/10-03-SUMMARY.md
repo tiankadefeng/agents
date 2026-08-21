@@ -89,4 +89,8 @@ None - plan executed exactly as written.
 | T-10-10 (Tampering: duck-typing) | `'role' in ev && 'content' in ev` 判别，与 Reflexion `'answer' in ev` 字段不同，模式天然互斥 |
 | T-10-SC (slopcheck) | package.json 未变，零新增依赖 |
 
-## Self-Check: PENDING
+## Self-Check: PASSED
+
+- 文件存在：`.planning/phases/10-role-playing-pattern/10-03-SUMMARY.md` FOUND
+- 提交存在：8444c2b / 95b7ff9 / 50edd9a 全部在 git log 中 FOUND
+- 工作区干净（git status 无未跟踪/未暂存文件），无意外文件删除
