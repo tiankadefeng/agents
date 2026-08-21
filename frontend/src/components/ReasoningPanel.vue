@@ -69,7 +69,8 @@ const totLevels = computed(() => {
   if (!isTotMode.value || !props.totTree) return []
   const levels = [-1]
   for (const n of props.totTree.nodeMap.value.values()) {
-    if (n.level > levels[levels.length - 1]) levels.push(n.level)
+    const last = levels[levels.length - 1]
+    if (last !== undefined && n.level > last) levels.push(n.level)
   }
   return levels
 })
