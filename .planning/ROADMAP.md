@@ -22,7 +22,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 7: Plan-and-Execute Pattern** - 两阶段（Planner + Executor）+ replan-on-failure (completed 2026-08-17)
 - [x] **Phase 8: Tree of Thoughts Pattern** - 分支生成 + LLM 评估 + 贪心剪枝 (completed 2026-08-20)
 - [x] **Phase 9: Reflexion Pattern** - generator + LLM-as-judge + reflector + retry (completed 2026-08-21)
-- [ ] **Phase 10: Role-playing Pattern** - 3 角色（PM/Dev/Tester）5 轮对话
+- [x] **Phase 10: Role-playing Pattern** - 3 角色（PM/Dev/Tester）5 轮对话 (completed 2026-08-21)
 - [ ] **Phase 11: MCP Integration** - 接入外部 MCP Server，工具生态扩展
 
 ## Phase Details
@@ -283,6 +283,16 @@ Plans:
 **Plans**: 3 plans
 **UI hint**: yes
 
+Plans:
+**Wave 1** *(parallel - no file conflicts)*
+
+- [x] 10-01-PLAN.md - 后端核心（RolePm/RoleDev/RoleTester 事件 + AgentEvent permits 18 + RolePlayingAgentPattern：5 轮 × 3 角色固定顺序 PM->Dev->Tester + 完整历史传递 + 独立总结调用 + 单元测试）
+- [x] 10-02-PLAN.md - 前端数据层（类型更新 + useSSEStream 路由 + App.vue 回调 + PatternSelector 启用 + patternDetails 填充）
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [x] 10-03-PLAN.md - 前端 ReasoningPanel Role-playing round 分组渲染（轮次分隔线 + PM/Dev/Tester 彩色头像角色卡片 + 三色主题区分）
+
 ### Phase 11: MCP Integration
 
 **Goal**: 用户能在前端看到 MCP 工具与内置工具并存，且 ReAct 模式能调用 MCP 工具完成推理（无缝扩展故事）
@@ -315,7 +325,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 4 -> 5 -> 6 -> 7 -> 8 -> 
 | 7. Plan-and-Execute Pattern | 2/2 | Complete   | 2026-08-17 |
 | 8. Tree of Thoughts Pattern | 2/2 | Complete   | 2026-08-20 |
 | 9. Reflexion Pattern | 3/3 | Complete    | 2026-08-21 |
-| 10. Role-playing Pattern | 0/0 | Not started | - |
+| 10. Role-playing Pattern | 3/3 | Complete    | 2026-08-21 |
 | 11. MCP Integration | 0/0 | Not started | - |
 
 ---
