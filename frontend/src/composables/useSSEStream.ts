@@ -17,12 +17,15 @@ import type {
   ReflexionAttemptEvent,
   ReflexionEvaluateEvent,
   ReflexionReflectEvent,
+  RolePmEvent,
+  RoleDevEvent,
+  RoleTesterEvent,
 } from '@/types/agent'
 
 /**
  * SSE stream options - Phase 2 D-01 event-name routing.
  *
- * Phase 8 routing covers 12 SSE event names:
+ * Phase 10 routing covers 18 SSE event names:
  * - ReasoningEvent -> onReasoning
  * - FinalAnswerEvent -> onFinal
  * - ErrorEvent -> onError
@@ -38,6 +41,9 @@ import type {
  * - ReflexionAttemptEvent -> onReflexionAttempt (Phase 9 Reflexion)
  * - ReflexionEvaluateEvent -> onReflexionEvaluate (Phase 9 Reflexion)
  * - ReflexionReflectEvent -> onReflexionReflect (Phase 9 Reflexion)
+ * - RolePmEvent -> onRolePm (Phase 10 Role-playing)
+ * - RoleDevEvent -> onRoleDev (Phase 10 Role-playing)
+ * - RoleTesterEvent -> onRoleTester (Phase 10 Role-playing)
  *
  * Other event names are defined in the type system
  * but not emitted yet. They will be added in Phase 8+ when patterns
@@ -68,6 +74,10 @@ export interface SSEStreamOptions {
   onReflexionAttempt?: (ev: ReflexionAttemptEvent) => void
   onReflexionEvaluate?: (ev: ReflexionEvaluateEvent) => void
   onReflexionReflect?: (ev: ReflexionReflectEvent) => void
+  // Phase 10 新增
+  onRolePm?: (ev: RolePmEvent) => void
+  onRoleDev?: (ev: RoleDevEvent) => void
+  onRoleTester?: (ev: RoleTesterEvent) => void
   signal?: AbortSignal
 }
 
@@ -190,6 +200,15 @@ export async function startSSEStream(
             break
           case 'ReflexionReflectEvent':
             options.onReflexionReflect?.(data as ReflexionReflectEvent)
+            break
+          case 'RolePmEvent':
+            options.onRolePm?.(data as RolePmEvent)
+            break
+          case 'RoleDevEvent':
+            options.onRoleDev?.(data as RoleDevEvent)
+            break
+          case 'RoleTesterEvent':
+            options.onRoleTester?.(data as RoleTesterEvent)
             break
           default:
             // Silently ignore unmapped event names (forward compat,

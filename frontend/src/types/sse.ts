@@ -5,7 +5,7 @@
  * D-01: SSE event field = ev.getClass().getSimpleName() (PascalCase).
  * Phase 2 D-01 推翻 Phase 1 D-02 的 event=message 方案。
  *
- * 15 个 event name 与后端 record 类名严格一致（大小写敏感）。
+ * 18 个 event name 与后端 record 类名严格一致（大小写敏感）。
  */
 export type AgentEventName =
   | 'ReasoningEvent'
@@ -21,6 +21,9 @@ export type AgentEventName =
   | 'ReflexionAttemptEvent'    // Phase 9 新增
   | 'ReflexionEvaluateEvent'   // Phase 9 新增
   | 'ReflexionReflectEvent'    // Phase 9 新增
+  | 'RolePmEvent'       // Phase 10 新增
+  | 'RoleDevEvent'      // Phase 10 新增
+  | 'RoleTesterEvent'   // Phase 10 新增
   | 'FinalAnswerEvent'
   | 'ErrorEvent'
 
