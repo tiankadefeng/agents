@@ -79,6 +79,11 @@ async function submit(question: string) {
       requestBody,
       {
         onReasoning: (content, ev) => {
+          if (selectedPatternId.value === 'reflexion') {
+            // Reflexion 模式：Generator 为 call() 一次性调用（.call().content()），
+            // 不产生流式 ReasoningEvent。若收到则忽略，避免与 ReflexionAttemptEvent 重复
+            return
+          }
           reasoningText.value += content
           // CoT 模式下每个 token 都是独立 ReasoningEvent，不加入 timeline（避免逐词显示为"思考"块）
           if (selectedPatternId.value !== 'cot') {
@@ -114,6 +119,16 @@ async function submit(question: string) {
         },
         onTotPrune: (ev) => {
           totTree.markPruned(ev)
+          agentEvents.value = [...agentEvents.value, ev]
+        },
+        // Phase 9: Reflexion 事件回调 -- 全部经 agentEvents 传递，不追加 reasoningText
+        onReflexionAttempt: (ev) => {
+          agentEvents.value = [...agentEvents.value, ev]
+        },
+        onReflexionEvaluate: (ev) => {
+          agentEvents.value = [...agentEvents.value, ev]
+        },
+        onReflexionReflect: (ev) => {
           agentEvents.value = [...agentEvents.value, ev]
         },
         onFinal: (content, _ev) => {
