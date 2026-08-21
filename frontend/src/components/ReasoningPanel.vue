@@ -2,7 +2,7 @@
 import { shallowRef, computed } from 'vue'
 import { Check } from '@element-plus/icons-vue'
 import type { StreamStatus } from '@/types/sse'
-import type { AgentEvent, ReasoningEvent, ToolCallEvent, ToolResultEvent, SubQuestionEvent, SubAnswerEvent, PlanEvent, StepStartEvent, StepCompleteEvent } from '@/types/agent'
+import type { AgentEvent, ReasoningEvent, ToolCallEvent, ToolResultEvent, SubQuestionEvent, SubAnswerEvent, PlanEvent, StepStartEvent, StepCompleteEvent, ReflexionAttemptEvent, ReflexionEvaluateEvent, ReflexionReflectEvent } from '@/types/agent'
 import type { TotTree } from '@/composables/useTotTree'
 import ToolCallEventCard from './ToolCallEventCard.vue'
 import ToolResultEventCard from './ToolResultEventCard.vue'
@@ -85,6 +85,47 @@ function scoreClass(score: number): string {
   if (score >= 4) return 'mid'
   return 'low'
 }
+
+// Phase 9: Reflexion round 分组渲染模式 -- 选中 reflexion 且事件列表包含 ReflexionAttemptEvent
+const isReflexionMode = computed(() =>
+  props.selectedPattern === 'reflexion'
+  && !!props.events
+  && props.events.some(ev => 'round' in ev && 'answer' in ev && !('score' in ev) && !('reflection' in ev))
+)
+
+// Phase 9: 提取所有 round 号，去重排序
+const reflexionRounds = computed(() => {
+  if (!isReflexionMode.value || !props.events) return []
+  const rounds = new Set<number>()
+  for (const ev of props.events) {
+    if ('round' in ev) {
+      rounds.add((ev as any).round as number)
+    }
+  }
+  return Array.from(rounds).sort()
+})
+
+// Phase 9: 获取指定 round 的所有事件
+function getEventsByRound(round: number): AgentEvent[] {
+  return props.events?.filter(ev => 'round' in ev && (ev as any).round === round) ?? []
+}
+
+// Phase 9: Reflexion 评分三段配色 (8-10 pass / 4-7 mid / 1-3 low)
+// 独立于 ToT 的 scoreClass，因为阈值不同（ToT >=7 金，Reflexion >=8 绿）
+function reflexionScoreClass(score: number): string {
+  if (score >= 8) return 'high'
+  if (score >= 4) return 'mid'
+  return 'low'
+}
+
+function isPassed(score: number): boolean {
+  return score >= 8
+}
+
+function isLastRound(round: number): boolean {
+  return reflexionRounds.value.length > 0
+    && round === reflexionRounds.value[reflexionRounds.value.length - 1]
+}
 </script>
 
 <template>
@@ -123,118 +164,172 @@ function scoreClass(score: number): string {
         </template>
 
       <!-- Phase 8: ToT 树状层-列布局 -->
-      <div v-else-if="isTotMode" class="tot-tree-container">
-        <div v-for="level in totLevels" :key="level" class="tot-level">
-          <div class="tot-level-label">{{ level === -1 ? '原始问题' : `Level ${level}` }}</div>
-          <div
-            v-for="node in props.totTree!.getNodesByLevel(level)"
-            :key="node.nodeId"
-            class="tot-node-card"
-            :class="{
-              'pruned': node.pruned,
-              'optimal-path': isOptimalPath(node.nodeId),
-            }"
-          >
-            <div v-if="level !== -1" class="tot-node-score" :class="scoreClass(node.score)">
-              {{ node.score }}/10
+      <template v-else-if="isTotMode">
+        <div class="tot-tree-container">
+          <div v-for="level in totLevels" :key="level" class="tot-level">
+            <div class="tot-level-label">{{ level === -1 ? '原始问题' : `Level ${level}` }}</div>
+            <div
+              v-for="node in props.totTree!.getNodesByLevel(level)"
+              :key="node.nodeId"
+              class="tot-node-card"
+              :class="{
+                'pruned': node.pruned,
+                'optimal-path': isOptimalPath(node.nodeId),
+              }"
+            >
+              <div v-if="level !== -1" class="tot-node-score" :class="scoreClass(node.score)">
+                {{ node.score }}/10
+              </div>
+              <div class="tot-node-thought">{{ node.thought }}</div>
+              <div v-if="node.pruned" class="tot-pruned-label">已剪枝</div>
             </div>
-            <div class="tot-node-thought">{{ node.thought }}</div>
-            <div v-if="node.pruned" class="tot-pruned-label">已剪枝</div>
           </div>
         </div>
-      </div>
-      <!-- 最优路径图例（流式完成后路径确定即显示） -->
-      <div v-if="isTotMode && props.totTree!.getOptimalPath().length > 0" class="tot-optimal-legend">
-        <span class="legend-dot"></span> 最优路径
-      </div>
+        <!-- 最优路径图例（流式完成后路径确定即显示） -->
+        <div v-if="props.totTree!.getOptimalPath().length > 0" class="tot-optimal-legend">
+          <span class="legend-dot"></span> 最优路径
+        </div>
+      </template>
 
-      <!-- Phase 5: vertical timeline (ReAct mode) -->
-      <div v-else class="timeline">
-        <template v-for="(ev, i) in events" :key="i">
-          <!-- ReasoningEvent -> Thought block -->
-          <div v-if="'content' in ev && !('toolName' in ev) && !('message' in ev) && !('steps' in ev)" class="timeline-item thought">
-            <span class="dot thought"></span>
-            <div class="label">思考 (Thought)</div>
-            <div class="content">{{ (ev as ReasoningEvent).content }}</div>
-          </div>
-          <!-- ToolCallEvent -> Action block -->
-          <div v-else-if="'toolName' in ev && 'arguments' in ev" class="timeline-item action">
-            <span class="dot action"></span>
-            <div class="label">行动 (Action)</div>
-            <ToolCallEventCard
-              :tool-name="(ev as ToolCallEvent).toolName"
-              :arguments="(ev as ToolCallEvent).arguments"
-              :ts="(ev as ToolCallEvent).ts"
-            />
-          </div>
-          <!-- ToolResultEvent -> Observation block -->
-          <div v-else-if="'toolName' in ev && 'result' in ev" class="timeline-item observation">
-            <span class="dot observation"></span>
-            <div class="label">观察 (Observation)</div>
-            <ToolResultEventCard
-              :tool-name="(ev as ToolResultEvent).toolName"
-              :result="(ev as ToolResultEvent).result"
-              :is-error="(ev as ToolResultEvent).isError"
-              :ts="(ev as ToolResultEvent).ts"
-            />
-          </div>
-          <!-- SubQuestion 块 (Phase 6 Self-Ask) -->
-          <div v-else-if="'question' in ev && !('answer' in ev)" class="timeline-item sub-question">
-            <span class="dot sub-question"></span>
-            <div class="label" style="color: #8B5CF6">子问题 (Sub-Question)</div>
-            <div class="content">{{ (ev as SubQuestionEvent).question }}</div>
-          </div>
-          <!-- SubAnswer 块 (Phase 6 Self-Ask) -->
-          <div v-else-if="'question' in ev && 'answer' in ev" class="timeline-item sub-answer">
-            <span class="dot sub-answer"></span>
-            <div class="label" style="color: #0D9488">子答案 (Sub-Answer)</div>
-            <div class="content">{{ (ev as SubAnswerEvent).answer }}</div>
-          </div>
-          <!-- Phase 7: Plan block (with optional Replan divider) -->
-          <template v-else-if="'steps' in ev">
-            <div v-if="isReplan(i)" class="replan-divider">
-              <span class="replan-divider-text">重新规划 (Replan)</span>
+      <!-- Phase 9: Reflexion round 分组布局 -->
+      <template v-else-if="isReflexionMode">
+        <div class="reflexion-container">
+          <template v-for="(round, ri) in reflexionRounds" :key="round">
+            <!-- 轮次分隔线 -->
+            <div class="round-divider">
+              <span class="round-divider-text">Round {{ round }}</span>
             </div>
-            <div class="timeline-item">
-              <span class="dot plan"></span>
-              <div class="label" style="color: #F59E0B">计划 (Plan)</div>
-              <div class="plan-steps-container">
-                <div v-for="step in (ev as PlanEvent).steps" :key="step.stepNumber" class="plan-step-item">
-                  <div class="plan-step-number">步骤 {{ step.stepNumber }}</div>
-                  <div class="plan-step-title">{{ step.description }}</div>
-                  <div class="plan-step-expected">
-                    <span class="plan-step-expected-label">预期输出: </span>
-                    {{ step.expectedOutput }}
+
+            <!-- 该轮的所有事件 -->
+            <div class="round-group">
+              <template v-for="(ev, i) in getEventsByRound(round)" :key="i">
+                <!-- ReflexionAttemptEvent -->
+                <div v-if="'answer' in ev && !('score' in ev) && !('reflection' in ev)" class="timeline-item reflexion">
+                  <span class="dot reflexion-attempt"></span>
+                  <div class="label reflexion-attempt">尝试 (Attempt {{ round }})</div>
+                  <div class="content">{{ (ev as ReflexionAttemptEvent).answer }}</div>
+                </div>
+                <!-- ReflexionEvaluateEvent -->
+                <div v-else-if="'score' in ev && 'feedback' in ev" class="timeline-item reflexion">
+                  <span class="dot reflexion-evaluate"></span>
+                  <div class="label reflexion-evaluate">评估 (Evaluate)</div>
+                  <div class="evaluate-content">
+                    <div class="evaluate-score" :class="reflexionScoreClass((ev as ReflexionEvaluateEvent).score)">
+                      评分：{{ (ev as ReflexionEvaluateEvent).score }}/10
+                    </div>
+                    <div class="evaluate-feedback">{{ (ev as ReflexionEvaluateEvent).feedback }}</div>
+                    <div class="evaluate-passed" v-if="isPassed((ev as ReflexionEvaluateEvent).score)">
+                      评估通过 (Passed)
+                    </div>
+                    <div class="evaluate-failed" v-else-if="isLastRound(round)">
+                      评估不通过 (Failed)
+                    </div>
+                    <div class="evaluate-failed" v-else>
+                      评估不通过，继续改进
+                    </div>
+                  </div>
+                </div>
+                <!-- ReflexionReflectEvent -->
+                <div v-else-if="'reflection' in ev" class="timeline-item reflexion">
+                  <span class="dot reflexion-reflect"></span>
+                  <div class="label reflexion-reflect">反思 (Reflect)</div>
+                  <div class="content">{{ (ev as ReflexionReflectEvent).reflection }}</div>
+                </div>
+              </template>
+            </div>
+          </template>
+        </div>
+      </template>
+
+      <!-- Phase 5: vertical timeline (default) -->
+      <template v-else>
+        <div class="timeline">
+          <template v-for="(ev, i) in events" :key="i">
+            <!-- ReasoningEvent -> Thought block -->
+            <div v-if="'content' in ev && !('toolName' in ev) && !('message' in ev) && !('steps' in ev)" class="timeline-item thought">
+              <span class="dot thought"></span>
+              <div class="label">思考 (Thought)</div>
+              <div class="content">{{ (ev as ReasoningEvent).content }}</div>
+            </div>
+            <!-- ToolCallEvent -> Action block -->
+            <div v-else-if="'toolName' in ev && 'arguments' in ev" class="timeline-item action">
+              <span class="dot action"></span>
+              <div class="label">行动 (Action)</div>
+              <ToolCallEventCard
+                :tool-name="(ev as ToolCallEvent).toolName"
+                :arguments="(ev as ToolCallEvent).arguments"
+                :ts="(ev as ToolCallEvent).ts"
+              />
+            </div>
+            <!-- ToolResultEvent -> Observation block -->
+            <div v-else-if="'toolName' in ev && 'result' in ev" class="timeline-item observation">
+              <span class="dot observation"></span>
+              <div class="label">观察 (Observation)</div>
+              <ToolResultEventCard
+                :tool-name="(ev as ToolResultEvent).toolName"
+                :result="(ev as ToolResultEvent).result"
+                :is-error="(ev as ToolResultEvent).isError"
+                :ts="(ev as ToolResultEvent).ts"
+              />
+            </div>
+            <!-- SubQuestion 块 (Phase 6 Self-Ask) -->
+            <div v-else-if="'question' in ev && !('answer' in ev)" class="timeline-item sub-question">
+              <span class="dot sub-question"></span>
+              <div class="label" style="color: #8B5CF6">子问题 (Sub-Question)</div>
+              <div class="content">{{ (ev as SubQuestionEvent).question }}</div>
+            </div>
+            <!-- SubAnswer 块 (Phase 6 Self-Ask) -->
+            <div v-else-if="'question' in ev && 'answer' in ev" class="timeline-item sub-answer">
+              <span class="dot sub-answer"></span>
+              <div class="label" style="color: #0D9488">子答案 (Sub-Answer)</div>
+              <div class="content">{{ (ev as SubAnswerEvent).answer }}</div>
+            </div>
+            <!-- Phase 7: Plan block (with optional Replan divider) -->
+            <template v-else-if="'steps' in ev">
+              <div v-if="isReplan(i)" class="replan-divider">
+                <span class="replan-divider-text">重新规划 (Replan)</span>
+              </div>
+              <div class="timeline-item">
+                <span class="dot plan"></span>
+                <div class="label" style="color: #F59E0B">计划 (Plan)</div>
+                <div class="plan-steps-container">
+                  <div v-for="step in (ev as PlanEvent).steps" :key="step.stepNumber" class="plan-step-item">
+                    <div class="plan-step-number">步骤 {{ step.stepNumber }}</div>
+                    <div class="plan-step-title">{{ step.description }}</div>
+                    <div class="plan-step-expected">
+                      <span class="plan-step-expected-label">预期输出: </span>
+                      {{ step.expectedOutput }}
+                    </div>
                   </div>
                 </div>
               </div>
+            </template>
+            <!-- Phase 7: StepStartEvent -> Step running 块 -->
+            <div v-else-if="'stepNumber' in ev && !('status' in ev)" class="timeline-item">
+              <span class="dot step-running"></span>
+              <div class="label" style="color: #1D70F5">步骤 {{ (ev as StepStartEvent).stepNumber }} 执行中</div>
+              <div class="content">{{ (ev as StepStartEvent).description }}</div>
             </div>
+            <!-- Phase 7: StepCompleteEvent -> Step done/failed 块 -->
+            <div v-else-if="'stepNumber' in ev && 'status' in ev && 'result' in ev" class="timeline-item">
+              <template v-if="(ev as StepCompleteEvent).status === 'done'">
+                <span class="dot step-done"></span>
+                <div class="label" style="color: #15AC0C">步骤 {{ (ev as StepCompleteEvent).stepNumber }} 已完成</div>
+                <div class="content">{{ (ev as StepCompleteEvent).result }}</div>
+              </template>
+              <template v-else>
+                <span class="dot step-failed"></span>
+                <div class="label" style="color: #D70016">步骤 {{ (ev as StepCompleteEvent).stepNumber }} 执行失败</div>
+                <div class="content" style="color: #D70016">{{ (ev as StepCompleteEvent).result }}</div>
+              </template>
+            </div>
+            <!-- FinalAnswerEvent and ErrorEvent are skipped (handled by FinalAnswer component and el-alert) -->
           </template>
-          <!-- Phase 7: StepStartEvent -> Step running 块 -->
-          <div v-else-if="'stepNumber' in ev && !('status' in ev)" class="timeline-item">
-            <span class="dot step-running"></span>
-            <div class="label" style="color: #1D70F5">步骤 {{ (ev as StepStartEvent).stepNumber }} 执行中</div>
-            <div class="content">{{ (ev as StepStartEvent).description }}</div>
+          <div v-if="events.length === 0" class="empty-state">
+            暂无推理过程。提交问题后，这里会流式显示推理过程。
           </div>
-          <!-- Phase 7: StepCompleteEvent -> Step done/failed 块 -->
-          <div v-else-if="'stepNumber' in ev && 'status' in ev && 'result' in ev" class="timeline-item">
-            <template v-if="(ev as StepCompleteEvent).status === 'done'">
-              <span class="dot step-done"></span>
-              <div class="label" style="color: #15AC0C">步骤 {{ (ev as StepCompleteEvent).stepNumber }} 已完成</div>
-              <div class="content">{{ (ev as StepCompleteEvent).result }}</div>
-            </template>
-            <template v-else>
-              <span class="dot step-failed"></span>
-              <div class="label" style="color: #D70016">步骤 {{ (ev as StepCompleteEvent).stepNumber }} 执行失败</div>
-              <div class="content" style="color: #D70016">{{ (ev as StepCompleteEvent).result }}</div>
-            </template>
-          </div>
-          <!-- FinalAnswerEvent and ErrorEvent are skipped (handled by FinalAnswer component and el-alert) -->
-        </template>
-        <div v-if="events.length === 0" class="empty-state">
-          暂无推理过程。提交问题后，这里会流式显示推理过程。
         </div>
-      </div>
+      </template>
       </el-collapse-item>
     </el-collapse>
   </div>
@@ -519,4 +614,63 @@ function scoreClass(score: number): string {
   border-radius: 50%;
   background: #F59E0B;
 }
+
+/* Phase 9: Reflexion round 分组布局 */
+.reflexion-container {
+  padding: 12px 0;
+}
+.round-divider {
+  display: flex;
+  align-items: center;
+  margin: 24px 0 16px;
+  padding-left: 0;
+}
+.round-divider::before,
+.round-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  border-top: 1px dashed #E4E7ED;
+}
+.round-divider-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #909399;
+  padding: 0 12px;
+  white-space: nowrap;
+}
+.round-group {
+  margin-bottom: 24px;
+  padding-left: 24px;
+}
+.round-group:last-child {
+  margin-bottom: 0;
+}
+.timeline-item.reflexion {
+  position: relative;
+  padding-left: 24px;
+  margin-bottom: 16px;
+}
+.timeline-item.reflexion:last-child {
+  margin-bottom: 0;
+}
+.dot.reflexion-attempt { border-color: #1D70F5; }
+.dot.reflexion-evaluate { border-color: #FAB215; }
+.dot.reflexion-reflect { border-color: #8B5CF6; }
+.label.reflexion-attempt { color: #1D70F5; font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+.label.reflexion-evaluate { color: #FAB215; font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+.label.reflexion-reflect { color: #8B5CF6; font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+.evaluate-content {
+  border: 1px solid #E4E7ED;
+  border-radius: 4px;
+  padding: 12px;
+  margin-top: 8px;
+}
+.evaluate-score { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+.evaluate-score.high { color: #15AC0C; }
+.evaluate-score.mid { color: #FAB215; }
+.evaluate-score.low { color: #D70016; }
+.evaluate-feedback { font-size: 14px; color: #555555; line-height: 1.5; white-space: pre-wrap; word-wrap: break-word; }
+.evaluate-passed { font-size: 12px; font-weight: 600; margin-top: 8px; padding: 2px 8px; border-radius: 3px; display: inline-block; background: #E3F6E1; color: #15AC0C; }
+.evaluate-failed { font-size: 12px; font-weight: 600; margin-top: 8px; padding: 2px 8px; border-radius: 3px; display: inline-block; background: #FCE5E7; color: #D70016; }
 </style>
