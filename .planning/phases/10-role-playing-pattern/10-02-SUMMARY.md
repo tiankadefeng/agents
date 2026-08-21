@@ -101,3 +101,9 @@ None - 本计划为数据层与启用层，无 UI 渲染 stub。Role*Event 的�
 - App.vue roleplay 模式下 onReasoning 直接 return（不追加 reasoningText、不追加 agentEvents）
 - PatternSelector roleplay 绿色 "已上线"；patternDetails roleplay 条目非空；PatternDescriptionCard 显示 "Role-playing 角色扮演"
 - 手动验证（需 DEEPSEEK_API_KEY + 10-01 后端合并）：启动前后端，选择 Role-playing 模式提交问题，DevTools EventStream 确认 Role*Event 依次到达 - 留待 phase 验收
+
+## Self-Check: PASSED
+
+- 4 个提交均在 worktree 分支上：d29f369 / 7176b57 / 3a956dd / ae1f50c
+- 全部 7 个修改文件存在且已提交；工作树无未提交变更（node_modules 被 .gitignore 覆盖）
+- SUMMARY.md 已提交（.planning/ 在 .gitignore 中，沿用 10-01/09-03 的 `git add -f` 惯例）
