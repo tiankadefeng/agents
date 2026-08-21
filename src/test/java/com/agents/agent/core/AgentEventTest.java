@@ -9,11 +9,12 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for {@link AgentEvent} sealed interface and its 15 record subtypes.
+ * Unit tests for {@link AgentEvent} sealed interface and its 18 record subtypes.
  *
  * <p>Verifies:
  * <ul>
- *   <li>D-04: All 15 records can be instantiated and implement AgentEvent</li>
+ *   <li>D-04: All 18 records can be instantiated and implement AgentEvent
+ *       (Phase 10: +RolePmEvent, +RoleDevEvent, +RoleTesterEvent)</li>
  *   <li>D-02: ts() accessor is available on all records (only common method)</li>
  *   <li>D-04: Record component accessors return values passed to constructor</li>
  * </ul>
@@ -23,10 +24,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 class AgentEventTest {
 
     @Test
-    void shouldInstantiateAllFifteenEventRecords() {
+    void shouldInstantiateAllEighteenEventRecords() {
         Instant now = Instant.now();
 
-        // D-04: 15 record subtypes, each implements AgentEvent (Phase 9: +ReflexionAttemptEvent, +ReflexionEvaluateEvent, +ReflexionReflectEvent)
+        // D-04: 18 record subtypes, each implements AgentEvent (Phase 10: +RolePmEvent, +RoleDevEvent, +RoleTesterEvent)
         AgentEvent reasoning = new ReasoningEvent(now, "thinking...");
         AgentEvent toolCall = new ToolCallEvent(now, "weather", Map.of("city", "Beijing"));
         AgentEvent toolResult = new ToolResultEvent(now, "weather", "25°C", false);
@@ -40,10 +41,13 @@ class AgentEventTest {
         AgentEvent reflexionAttempt = new ReflexionAttemptEvent(now, 1, "attempt answer");
         AgentEvent reflexionEvaluate = new ReflexionEvaluateEvent(now, 1, 8, "good answer");
         AgentEvent reflexionReflect = new ReflexionReflectEvent(now, 1, "improve clarity");
+        AgentEvent rolePm = new RolePmEvent(now, 1, "PM", "pm content");
+        AgentEvent roleDev = new RoleDevEvent(now, 1, "Dev", "dev content");
+        AgentEvent roleTester = new RoleTesterEvent(now, 1, "Tester", "tester content");
         AgentEvent finalAnswer = new FinalAnswerEvent(now, "The answer is 42");
         AgentEvent error = new ErrorEvent(now, "Something went wrong");
 
-        // All 15 instances are AgentEvent subtypes
+        // All 18 instances are AgentEvent subtypes
         assertThat(reasoning).isInstanceOf(AgentEvent.class);
         assertThat(toolCall).isInstanceOf(AgentEvent.class);
         assertThat(toolResult).isInstanceOf(AgentEvent.class);
@@ -57,6 +61,9 @@ class AgentEventTest {
         assertThat(reflexionAttempt).isInstanceOf(AgentEvent.class);
         assertThat(reflexionEvaluate).isInstanceOf(AgentEvent.class);
         assertThat(reflexionReflect).isInstanceOf(AgentEvent.class);
+        assertThat(rolePm).isInstanceOf(AgentEvent.class);
+        assertThat(roleDev).isInstanceOf(AgentEvent.class);
+        assertThat(roleTester).isInstanceOf(AgentEvent.class);
         assertThat(finalAnswer).isInstanceOf(AgentEvent.class);
         assertThat(error).isInstanceOf(AgentEvent.class);
 
@@ -74,6 +81,9 @@ class AgentEventTest {
         assertThat(reflexionAttempt.ts()).isNotNull();
         assertThat(reflexionEvaluate.ts()).isNotNull();
         assertThat(reflexionReflect.ts()).isNotNull();
+        assertThat(rolePm.ts()).isNotNull();
+        assertThat(roleDev.ts()).isNotNull();
+        assertThat(roleTester.ts()).isNotNull();
         assertThat(finalAnswer.ts()).isNotNull();
         assertThat(error.ts()).isNotNull();
 
@@ -85,6 +95,9 @@ class AgentEventTest {
         assertThat(reflexionAttempt.ts()).isEqualTo(now);
         assertThat(reflexionEvaluate.ts()).isEqualTo(now);
         assertThat(reflexionReflect.ts()).isEqualTo(now);
+        assertThat(rolePm.ts()).isEqualTo(now);
+        assertThat(roleDev.ts()).isEqualTo(now);
+        assertThat(roleTester.ts()).isEqualTo(now);
         assertThat(error.ts()).isEqualTo(now);
     }
 
@@ -179,6 +192,24 @@ class AgentEventTest {
         assertThat(reflexionReflect.round()).isEqualTo(1);
         assertThat(reflexionReflect.reflection()).isEqualTo("improve");
 
+        // RolePmEvent: ts + round + role + content (Phase 10)
+        RolePmEvent rolePm = new RolePmEvent(now, 1, "PM", "需求分析");
+        assertThat(rolePm.round()).isEqualTo(1);
+        assertThat(rolePm.role()).isEqualTo("PM");
+        assertThat(rolePm.content()).isEqualTo("需求分析");
+
+        // RoleDevEvent: ts + round + role + content (Phase 10)
+        RoleDevEvent roleDev = new RoleDevEvent(now, 1, "Dev", "设计方案");
+        assertThat(roleDev.round()).isEqualTo(1);
+        assertThat(roleDev.role()).isEqualTo("Dev");
+        assertThat(roleDev.content()).isEqualTo("设计方案");
+
+        // RoleTesterEvent: ts + round + role + content (Phase 10)
+        RoleTesterEvent roleTester = new RoleTesterEvent(now, 1, "Tester", "测试方案");
+        assertThat(roleTester.round()).isEqualTo(1);
+        assertThat(roleTester.role()).isEqualTo("Tester");
+        assertThat(roleTester.content()).isEqualTo("测试方案");
+
         // 根节点 parentId 为 null
         TotNodeEvent root = new TotNodeEvent(now, -1, 0, "原始问题", 0, null);
         assertThat(root.parentId()).isNull();
@@ -205,6 +236,9 @@ class AgentEventTest {
             new ReflexionAttemptEvent(now, 1, "attempt answer"),
             new ReflexionEvaluateEvent(now, 1, 8, "good"),
             new ReflexionReflectEvent(now, 1, "improve"),
+            new RolePmEvent(now, 1, "PM", "pm content"),
+            new RoleDevEvent(now, 1, "Dev", "dev content"),
+            new RoleTesterEvent(now, 1, "Tester", "tester content"),
             new FinalAnswerEvent(now, "a"),
             new ErrorEvent(now, "e"),
         };
@@ -236,6 +270,9 @@ class AgentEventTest {
             case ReflexionAttemptEvent r -> "reflexion-attempt:" + r.round() + ":" + r.answer();
             case ReflexionEvaluateEvent r -> "reflexion-evaluate:" + r.round() + ":" + r.score();
             case ReflexionReflectEvent r -> "reflexion-reflect:" + r.round() + ":" + r.reflection();
+            case RolePmEvent r -> "role-pm:" + r.round() + ":" + r.content();
+            case RoleDevEvent r -> "role-dev:" + r.round() + ":" + r.content();
+            case RoleTesterEvent r -> "role-tester:" + r.round() + ":" + r.content();
             case FinalAnswerEvent f -> "final:" + f.content();
             case ErrorEvent e -> "error:" + e.message();
         };
