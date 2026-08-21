@@ -324,7 +324,9 @@ public class ReflexionAgentPattern implements AgentPattern {
                         return;
                     }
 
-                    if (Math.abs(score2 - prevScore) < EPSILON) {
+                    // Epsilon early stop: improvement less than EPSILON — catches both
+                    // no-improvement (equal) and regression (score dropped) via score2 - prevScore < EPSILON
+                    if (score2 - prevScore < EPSILON) {
                         // Epsilon early stop: select best answer, no more reflector
                         String bestAnswer = selectBestAnswer(rounds);
                         sink.next(new FinalAnswerEvent(Instant.now(), bestAnswer));

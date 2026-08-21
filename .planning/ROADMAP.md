@@ -21,7 +21,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 6: Self-Ask Pattern** - 子问题->子答案链式时间线 (completed 2026-08-14)
 - [x] **Phase 7: Plan-and-Execute Pattern** - 两阶段（Planner + Executor）+ replan-on-failure (completed 2026-08-17)
 - [x] **Phase 8: Tree of Thoughts Pattern** - 分支生成 + LLM 评估 + 贪心剪枝 (completed 2026-08-20)
-- [ ] **Phase 9: Reflexion Pattern** - generator + LLM-as-judge + reflector + retry
+- [x] **Phase 9: Reflexion Pattern** - generator + LLM-as-judge + reflector + retry (completed 2026-08-21)
 - [ ] **Phase 10: Role-playing Pattern** - 3 角色（PM/Dev/Tester）5 轮对话
 - [ ] **Phase 11: MCP Integration** - 接入外部 MCP Server，工具生态扩展
 
@@ -261,12 +261,12 @@ Plans:
 Plans:
 **Wave 1** *(parallel - no file conflicts)*
 
-- [ ] 09-01-PLAN.md - 后端核心（ReflexionAttempt/Evaluate/Reflect 事件 + AgentEvent permits 15 + ReflexionAgentPattern：Generator + LLM-as-judge Evaluator + Reflector 循环 + max_reflections=2 + epsilon 提前停止 + 单元测试）
-- [ ] 09-02-PLAN.md - 前端数据层（类型更新 + useSSEStream 路由 + App.vue 回调 + PatternSelector 启用 + patternDetails 填充）
+- [x] 09-01-PLAN.md - 后端核心（ReflexionAttempt/Evaluate/Reflect 事件 + AgentEvent permits 15 + ReflexionAgentPattern：Generator + LLM-as-judge Evaluator + Reflector 循环 + max_reflections=2 + epsilon 提前停止 + 单元测试）
+- [x] 09-02-PLAN.md - 前端数据层（类型更新 + useSSEStream 路由 + App.vue 回调 + PatternSelector 启用 + patternDetails 填充）
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 09-03-PLAN.md - 前端 ReasoningPanel Reflexion round 分组渲染（round 分隔线 + Attempt/Evaluate/Reflect 卡片 + 评分三段配色 + 通过/不通过徽章）
+- [x] 09-03-PLAN.md - 前端 ReasoningPanel Reflexion round 分组渲染（round 分隔线 + Attempt/Evaluate/Reflect 卡片 + 评分三段配色 + 通过/不通过徽章）
 
 ### Phase 10: Role-playing Pattern
 
@@ -314,7 +314,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 4 -> 5 -> 6 -> 7 -> 8 -> 
 | 6. Self-Ask Pattern | 2/2 | Complete   | 2026-08-14 |
 | 7. Plan-and-Execute Pattern | 2/2 | Complete   | 2026-08-17 |
 | 8. Tree of Thoughts Pattern | 2/2 | Complete   | 2026-08-20 |
-| 9. Reflexion Pattern | 0/0 | Not started | - |
+| 9. Reflexion Pattern | 3/3 | Complete    | 2026-08-21 |
 | 10. Role-playing Pattern | 0/0 | Not started | - |
 | 11. MCP Integration | 0/0 | Not started | - |
 
