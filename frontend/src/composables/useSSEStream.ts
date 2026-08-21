@@ -14,6 +14,9 @@ import type {
   StepCompleteEvent,
   TotNodeEvent,
   TotPruneEvent,
+  ReflexionAttemptEvent,
+  ReflexionEvaluateEvent,
+  ReflexionReflectEvent,
 } from '@/types/agent'
 
 /**
@@ -32,6 +35,9 @@ import type {
  * - StepCompleteEvent -> onStepComplete (Phase 7 Plan-and-Execute)
  * - TotNodeEvent -> onTotNode (Phase 8 Tree of Thoughts)
  * - TotPruneEvent -> onTotPrune (Phase 8 Tree of Thoughts)
+ * - ReflexionAttemptEvent -> onReflexionAttempt (Phase 9 Reflexion)
+ * - ReflexionEvaluateEvent -> onReflexionEvaluate (Phase 9 Reflexion)
+ * - ReflexionReflectEvent -> onReflexionReflect (Phase 9 Reflexion)
  *
  * Other event names are defined in the type system
  * but not emitted yet. They will be added in Phase 8+ when patterns
@@ -58,6 +64,10 @@ export interface SSEStreamOptions {
   // Phase 8 新增
   onTotNode?: (ev: TotNodeEvent) => void
   onTotPrune?: (ev: TotPruneEvent) => void
+  // Phase 9 新增
+  onReflexionAttempt?: (ev: ReflexionAttemptEvent) => void
+  onReflexionEvaluate?: (ev: ReflexionEvaluateEvent) => void
+  onReflexionReflect?: (ev: ReflexionReflectEvent) => void
   signal?: AbortSignal
 }
 
@@ -171,6 +181,15 @@ export async function startSSEStream(
             break
           case 'TotPruneEvent':
             options.onTotPrune?.(data as TotPruneEvent)
+            break
+          case 'ReflexionAttemptEvent':
+            options.onReflexionAttempt?.(data as ReflexionAttemptEvent)
+            break
+          case 'ReflexionEvaluateEvent':
+            options.onReflexionEvaluate?.(data as ReflexionEvaluateEvent)
+            break
+          case 'ReflexionReflectEvent':
+            options.onReflexionReflect?.(data as ReflexionReflectEvent)
             break
           default:
             // Silently ignore unmapped event names (forward compat,

@@ -29,7 +29,7 @@ export interface AgentRequest {
 
 /**
  * AgentEvent - discriminated union mirroring backend sealed interface
- * com.agents.agent.core.AgentEvent and its 12 record subtypes.
+ * com.agents.agent.core.AgentEvent and its 15 record subtypes.
  *
  * Discriminant: SSE event field (= Java class simple name, PascalCase).
  * Phase 2 D-01 推翻 Phase 1 D-02 的 event=message + data.type 方案。
@@ -45,6 +45,9 @@ export type AgentEvent =
   | StepCompleteEvent
   | TotNodeEvent        // Phase 8 新增
   | TotPruneEvent       // Phase 8 新增
+  | ReflexionAttemptEvent    // Phase 9 新增
+  | ReflexionEvaluateEvent   // Phase 9 新增
+  | ReflexionReflectEvent    // Phase 9 新增
   | FinalAnswerEvent
   | ErrorEvent
 
@@ -168,6 +171,37 @@ export interface TotPruneEvent {
   level: number
   prunedNodeIds: number[]
   reason: string
+}
+
+/**
+ * ReflexionAttemptEvent - mirrors backend com.agents.agent.core.ReflexionAttemptEvent.
+ * Reflexion 每轮尝试的答案内容 (Phase 9 用).
+ */
+export interface ReflexionAttemptEvent {
+  ts: InstantString
+  round: number
+  answer: string
+}
+
+/**
+ * ReflexionEvaluateEvent - mirrors backend com.agents.agent.core.ReflexionEvaluateEvent.
+ * Reflexion 评估结果（分数 + 反馈）(Phase 9 用).
+ */
+export interface ReflexionEvaluateEvent {
+  ts: InstantString
+  round: number
+  score: number
+  feedback: string
+}
+
+/**
+ * ReflexionReflectEvent - mirrors backend com.agents.agent.core.ReflexionReflectEvent.
+ * Reflexion 反思内容（下一轮改进依据）(Phase 9 用).
+ */
+export interface ReflexionReflectEvent {
+  ts: InstantString
+  round: number
+  reflection: string
 }
 
 /**
