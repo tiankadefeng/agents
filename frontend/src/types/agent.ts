@@ -29,7 +29,7 @@ export interface AgentRequest {
 
 /**
  * AgentEvent - discriminated union mirroring backend sealed interface
- * com.agents.agent.core.AgentEvent and its 15 record subtypes.
+ * com.agents.agent.core.AgentEvent and its 18 record subtypes.
  *
  * Discriminant: SSE event field (= Java class simple name, PascalCase).
  * Phase 2 D-01 推翻 Phase 1 D-02 的 event=message + data.type 方案。
@@ -48,6 +48,9 @@ export type AgentEvent =
   | ReflexionAttemptEvent    // Phase 9 新增
   | ReflexionEvaluateEvent   // Phase 9 新增
   | ReflexionReflectEvent    // Phase 9 新增
+  | RolePmEvent         // Phase 10 新增
+  | RoleDevEvent        // Phase 10 新增
+  | RoleTesterEvent     // Phase 10 新增
   | FinalAnswerEvent
   | ErrorEvent
 
@@ -202,6 +205,39 @@ export interface ReflexionReflectEvent {
   ts: InstantString
   round: number
   reflection: string
+}
+
+/**
+ * RolePmEvent - mirrors backend com.agents.agent.core.RolePmEvent.
+ * PM（产品经理）角色发言事件 (Phase 10 用).
+ */
+export interface RolePmEvent {
+  ts: InstantString
+  round: number
+  role: string
+  content: string
+}
+
+/**
+ * RoleDevEvent - mirrors backend com.agents.agent.core.RoleDevEvent.
+ * Dev（开发者）角色发言事件 (Phase 10 用).
+ */
+export interface RoleDevEvent {
+  ts: InstantString
+  round: number
+  role: string
+  content: string
+}
+
+/**
+ * RoleTesterEvent - mirrors backend com.agents.agent.core.RoleTesterEvent.
+ * Tester（测试工程师）角色发言事件 (Phase 10 用).
+ */
+export interface RoleTesterEvent {
+  ts: InstantString
+  round: number
+  role: string
+  content: string
 }
 
 /**
