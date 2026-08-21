@@ -50,6 +50,7 @@ function isPatternEnabled(patternId: string): boolean {
     || patternId === 'selfAsk'
     || patternId === 'planExecute'  // Phase 7 新增
     || patternId === 'tot'  // Phase 8 新增
+    || patternId === 'reflexion'  // Phase 9 新增
 }
 
 function handlePatternClick(patternId: string) {

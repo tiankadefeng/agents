@@ -54,8 +54,15 @@ export const PATTERN_DETAILS: Record<string, PatternDetail> = {
       + '解谜和搜索类问题（如"8 皇后问题"、"数独"）。',
   },
   reflexion: {
-    coreIdea: '',
-    scenarios: '',
+    coreIdea: 'Reflexion（反思迭代）是一种让模型通过"尝试->评估->反思->改进"循环来自我纠错的 Agent 模式。'
+      + 'Generator 生成初始答案，Evaluator（LLM-as-judge）评估答案质量并给出分数和反馈，'
+      + 'Reflector 根据反馈生成反思。下一轮 Generator 依据反思内容改进答案，'
+      + '直到评估通过或达到最大轮次。'
+      + '整个过程就像一个学习者不断检查自己的作业并改进——"犯错不可怕，关键是要从错误中学习"。',
+    scenarios: '需要迭代改进的创作任务（如"写一段代码然后优化"、"撰写文案并改进"）、'
+      + '需要多轮打磨的推理问题（如"证明一个数学定理"）、'
+      + '需要自我纠错的复杂任务（如"设计一个算法并分析其复杂度"）、'
+      + '从差到好逐步改进的开放性问题（如"为一款新产品撰写宣传文案"）。',
   },
   roleplay: {
     coreIdea: '',
