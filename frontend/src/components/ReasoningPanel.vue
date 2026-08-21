@@ -2,7 +2,7 @@
 import { shallowRef, computed } from 'vue'
 import { Check } from '@element-plus/icons-vue'
 import type { StreamStatus } from '@/types/sse'
-import type { AgentEvent, ReasoningEvent, ToolCallEvent, ToolResultEvent, SubQuestionEvent, SubAnswerEvent, PlanEvent, StepStartEvent, StepCompleteEvent, ReflexionAttemptEvent, ReflexionEvaluateEvent, ReflexionReflectEvent } from '@/types/agent'
+import type { AgentEvent, ReasoningEvent, ToolCallEvent, ToolResultEvent, SubQuestionEvent, SubAnswerEvent, PlanEvent, StepStartEvent, StepCompleteEvent, ReflexionAttemptEvent, ReflexionEvaluateEvent, ReflexionReflectEvent, RolePmEvent, RoleDevEvent, RoleTesterEvent } from '@/types/agent'
 import type { TotTree } from '@/composables/useTotTree'
 import ToolCallEventCard from './ToolCallEventCard.vue'
 import ToolResultEventCard from './ToolResultEventCard.vue'
@@ -127,6 +127,43 @@ function isLastRound(round: number): boolean {
   return reflexionRounds.value.length > 0
     && round === reflexionRounds.value[reflexionRounds.value.length - 1]
 }
+
+// Phase 10: Role-playing 轮次分组渲染模式 -- 选中 roleplay 且事件列表包含 Role*Event
+const isRoleplayMode = computed(() =>
+  props.selectedPattern === 'roleplay'
+  && !!props.events
+  && props.events.some(ev => 'role' in ev && 'content' in ev)
+)
+
+// Phase 10: 提取 Role-playing 所有 round 号，去重排序
+const roleplayRounds = computed(() => {
+  if (!isRoleplayMode.value || !props.events) return []
+  const rounds = new Set<number>()
+  for (const ev of props.events) {
+    if ('round' in ev && 'role' in ev) {
+      rounds.add((ev as any).round as number)
+    }
+  }
+  return Array.from(rounds).sort()
+})
+
+// Phase 10: 获取指定 round 的 Role-playing 角色事件（按到达顺序 = PM->Dev->Tester）
+function getRoleEventsByRound(round: number): AgentEvent[] {
+  return props.events?.filter(ev => 'round' in ev && 'role' in ev && (ev as any).round === round) ?? []
+}
+
+// Phase 10: 角色彩色配置映射（头像符号 + 显示名 + 主题色）
+// PM=蓝色 📋 / Dev=绿色 💻 / Tester=橙色 🔍 (per CONTEXT Claude's Discretion 彩色头像设计)
+const ROLE_CONFIG: Record<string, { icon: string; name: string; color: string }> = {
+  PM: { icon: '📋', name: '产品经理', color: '#1D70F5' },
+  Dev: { icon: '💻', name: '开发者', color: '#15AC0C' },
+  Tester: { icon: '🔍', name: '测试工程师', color: '#FAB215' },
+}
+
+// Phase 10: 获取角色配置（未知角色降级为灰色默认配置）
+function roleConfig(role: string): { icon: string; name: string; color: string } {
+  return ROLE_CONFIG[role] ?? { icon: '👤', name: role, color: '#909399' }
+}
 </script>
 
 <template>
@@ -235,6 +272,37 @@ function isLastRound(round: number): boolean {
                   <span class="dot reflexion-reflect"></span>
                   <div class="label reflexion-reflect">反思 (Reflect)</div>
                   <div class="content">{{ (ev as ReflexionReflectEvent).reflection }}</div>
+                </div>
+              </template>
+            </div>
+          </template>
+        </div>
+      </template>
+
+      <!-- Phase 10: Role-playing 轮次分组对话布局 -->
+      <template v-else-if="isRoleplayMode">
+        <div class="roleplay-container">
+          <template v-for="round in roleplayRounds" :key="round">
+            <!-- 轮次分隔线 -->
+            <div class="round-divider">
+              <span class="round-divider-text">Round {{ round }}</span>
+            </div>
+
+            <!-- 该轮的角色对话（PM -> Dev -> Tester 按到达顺序） -->
+            <div class="roleplay-round-group">
+              <template v-for="(ev, i) in getRoleEventsByRound(round)" :key="i">
+                <!-- RolePmEvent / RoleDevEvent / RoleTesterEvent 统一渲染为角色卡片 -->
+                <div v-if="'role' in ev && 'content' in ev" class="roleplay-card" :style="{ borderLeftColor: roleConfig((ev as any).role).color }">
+                  <div class="roleplay-header">
+                    <span class="roleplay-avatar" :style="{ background: roleConfig((ev as any).role).color }">
+                      {{ roleConfig((ev as any).role).icon }}
+                    </span>
+                    <span class="roleplay-name" :style="{ color: roleConfig((ev as any).role).color }">
+                      {{ roleConfig((ev as any).role).name }} ({{ (ev as any).role }})
+                    </span>
+                    <span class="roleplay-round-tag">第 {{ round }} 轮</span>
+                  </div>
+                  <div class="roleplay-content">{{ (ev as RolePmEvent | RoleDevEvent | RoleTesterEvent).content }}</div>
                 </div>
               </template>
             </div>
@@ -674,4 +742,61 @@ function isLastRound(round: number): boolean {
 .evaluate-feedback { font-size: 14px; color: #555555; line-height: 1.5; white-space: pre-wrap; word-wrap: break-word; }
 .evaluate-passed { font-size: 12px; font-weight: 600; margin-top: 8px; padding: 2px 8px; border-radius: 3px; display: inline-block; background: #E3F6E1; color: #15AC0C; }
 .evaluate-failed { font-size: 12px; font-weight: 600; margin-top: 8px; padding: 2px 8px; border-radius: 3px; display: inline-block; background: #FCE5E7; color: #D70016; }
+
+/* Phase 10: Role-playing 轮次分组对话布局 */
+.roleplay-container {
+  padding: 12px 0;
+}
+.roleplay-round-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.roleplay-round-group:last-child {
+  margin-bottom: 0;
+}
+.roleplay-card {
+  border: 1px solid #E4E7ED;
+  border-left: 3px solid #909399; /* 动态覆盖为角色色 */
+  border-radius: 6px;
+  background: #FFFFFF;
+  padding: 12px 16px;
+}
+.roleplay-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.roleplay-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 14px;
+  color: #FFFFFF;
+  flex-shrink: 0;
+}
+.roleplay-name {
+  font-size: 13px;
+  font-weight: 600;
+}
+.roleplay-round-tag {
+  margin-left: auto;
+  font-size: 11px;
+  color: #909399;
+  background: #F5F7FA;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.roleplay-content {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #555555;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
 </style>
