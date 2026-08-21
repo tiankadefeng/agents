@@ -79,9 +79,9 @@ async function submit(question: string) {
       requestBody,
       {
         onReasoning: (content, ev) => {
-          if (selectedPatternId.value === 'reflexion') {
-            // Reflexion 模式：Generator 为 call() 一次性调用（.call().content()），
-            // 不产生流式 ReasoningEvent。若收到则忽略，避免与 ReflexionAttemptEvent 重复
+          if (selectedPatternId.value === 'reflexion' || selectedPatternId.value === 'roleplay') {
+            // Reflexion/Role-playing 模式：Generator/角色发言为 call() 一次性调用，
+            // 不产生流式 ReasoningEvent。若收到则忽略，避免与 AttemptEvent/Role*Event 重复
             return
           }
           reasoningText.value += content
@@ -129,6 +129,16 @@ async function submit(question: string) {
           agentEvents.value = [...agentEvents.value, ev]
         },
         onReflexionReflect: (ev) => {
+          agentEvents.value = [...agentEvents.value, ev]
+        },
+        // Phase 10: Role-playing 事件回调 -- 全部经 agentEvents 传递，不追加 reasoningText
+        onRolePm: (ev) => {
+          agentEvents.value = [...agentEvents.value, ev]
+        },
+        onRoleDev: (ev) => {
+          agentEvents.value = [...agentEvents.value, ev]
+        },
+        onRoleTester: (ev) => {
           agentEvents.value = [...agentEvents.value, ev]
         },
         onFinal: (content, _ev) => {
