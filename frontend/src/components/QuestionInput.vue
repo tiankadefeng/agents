@@ -45,16 +45,7 @@ function onKeydown(e: KeyboardEvent) {
 <template>
   <div class="question-input">
     <label class="input-label">问题</label>
-    <el-input
-      v-model="question"
-      type="textarea"
-      :rows="3"
-      :disabled="streaming"
-      placeholder="请输入你的问题，例如：证明 √2 是无理数"
-      @keydown="onKeydown"
-    />
     <div v-if="examples.length > 0 && !streaming" class="example-section">
-      <span class="example-title">示例问题</span>
       <div class="example-list">
         <button
           v-for="example in examples"
@@ -67,6 +58,14 @@ function onKeydown(e: KeyboardEvent) {
         </button>
       </div>
     </div>
+    <el-input
+      v-model="question"
+      type="textarea"
+      :rows="3"
+      :disabled="streaming"
+      placeholder="请输入你的问题，例如：证明 √2 是无理数"
+      @keydown="onKeydown"
+    />
     <div class="button-row">
       <el-button v-if="streaming" type="default" :icon="Close" @click="emit('abort')">
         中断
@@ -101,32 +100,22 @@ function onKeydown(e: KeyboardEvent) {
 }
 
 .example-section {
-  margin-top: var(--design-spacing-sm);
-}
-
-.example-title {
-  display: block;
-  font-size: var(--design-font-size-sm, 12px);
-  color: var(--design-text-secondary, #909399);
-  margin-bottom: var(--design-spacing-xs, 6px);
+  margin-bottom: var(--design-spacing-sm);
 }
 
 .example-list {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .example-item {
-  display: block;
-  width: 100%;
-  padding: 6px 10px;
-  text-align: left;
-  font-size: var(--design-font-size-sm, 13px);
+  padding: 4px 8px;
+  font-size: 12px;
   line-height: 1.5;
   color: var(--design-text-secondary, #606266);
-  background: transparent;
-  border: 1px dashed var(--design-divider, #e4e7ed);
+  background: var(--design-bg-white, #fff);
+  border: 1px solid var(--design-divider, #e4e7ed);
   border-radius: var(--design-radius-base, 4px);
   cursor: pointer;
   transition: color 0.2s, border-color 0.2s, background-color 0.2s;
