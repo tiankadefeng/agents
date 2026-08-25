@@ -4,6 +4,7 @@ import com.agents.agent.core.AgentContext;
 import com.agents.agent.core.AgentEvent;
 import com.agents.agent.core.ErrorEvent;
 import com.agents.agent.core.FinalAnswerEvent;
+import com.agents.agent.core.ReasoningDeltaEvent;
 import com.agents.agent.core.ToolCallEvent;
 import com.agents.agent.core.ToolResultEvent;
 import com.agents.tool.ToolRegistry;
@@ -245,5 +246,70 @@ class ReActAgentPatternTest {
                 .anyMatch(ev -> ev instanceof FinalAnswerEvent
                         && ((FinalAnswerEvent) ev).content().contains("北京天气22度"));
         assertThat(hasFinalAnswer).isTrue();
+    }
+
+    @Test
+    void shouldStreamThoughtDeltasBeforeToolCall() {
+        // Arrange: round 1 streams thought in 3 chunks + a complete tool call in the last chunk;
+        // round 2 returns the final answer
+        AssistantMessage chunk1 = AssistantMessage.builder().content("让我").toolCalls(List.of()).build();
+        AssistantMessage chunk2 = AssistantMessage.builder().content("查询").toolCalls(List.of()).build();
+        AssistantMessage chunk3 = AssistantMessage.builder().content("天气").toolCalls(List.of(
+                new AssistantMessage.ToolCall("call_1", "function", "weather", "{\"city\":\"北京\"}"))).build();
+        AssistantMessage finalMsg = AssistantMessage.builder()
+                .content("北京天气22度，晴天。")
+                .toolCalls(List.of())
+                .build();
+
+        ToolCallback mockTool = mock(ToolCallback.class);
+        when(toolRegistry.forPattern("react")).thenReturn(List.of(mockTool));
+        when(toolRegistry.byName("weather")).thenReturn(mockTool);
+        when(mockTool.call("{\"city\":\"北京\"}")).thenReturn("{\"temperature\":22}");
+
+        when(chatModel.stream(any(Prompt.class))).thenReturn(
+                Flux.just(new ChatResponse(List.of(new Generation(chunk1))),
+                        new ChatResponse(List.of(new Generation(chunk2))),
+                        new ChatResponse(List.of(new Generation(chunk3)))),
+                Flux.just(new ChatResponse(List.of(new Generation(finalMsg)))));
+
+        // Act
+        List<AgentEvent> eventList = reActAgentPattern.execute(
+                        new AgentContext("北京天气怎么样？", Map.of()))
+                .collectList().block(Duration.ofSeconds(5));
+
+        // Assert: deltas emitted per chunk, all before the ToolCallEvent
+        List<String> deltas = eventList.stream()
+                .filter(ReasoningDeltaEvent.class::isInstance)
+                .map(ReasoningDeltaEvent.class::cast)
+                .map(ReasoningDeltaEvent::content)
+                .toList();
+        assertThat(deltas).contains("让我", "查询", "天气");
+
+        int firstDeltaIdx = eventList.indexOf(eventList.stream()
+                .filter(ReasoningDeltaEvent.class::isInstance)
+                .findFirst().orElseThrow());
+        int toolCallIdx = eventList.stream()
+                .map(ev -> (ev instanceof ToolCallEvent) ? 1 : 0)
+                .toList().indexOf(1);
+        assertThat(firstDeltaIdx).isLessThan(toolCallIdx);
+
+        // Aggregated tool call received complete arguments JSON (SSE-06)
+        verify(mockTool).call("{\"city\":\"北京\"}");
+    }
+
+    @Test
+    void shouldEmitSingleErrorEventOnStreamFailure() {
+        ToolCallback mockTool = mock(ToolCallback.class);
+        when(toolRegistry.forPattern("react")).thenReturn(List.of(mockTool));
+        when(chatModel.stream(any(Prompt.class)))
+                .thenReturn(Flux.error(new RuntimeException("API failure")));
+
+        List<AgentEvent> eventList = reActAgentPattern.execute(
+                        new AgentContext("北京天气怎么样？", Map.of()))
+                .collectList().block(Duration.ofSeconds(5));
+
+        assertThat(eventList).hasSize(1);
+        assertThat(eventList.get(0)).isInstanceOf(ErrorEvent.class);
+        assertThat(((ErrorEvent) eventList.get(0)).message()).contains("ReAct");
     }
 }

@@ -5,6 +5,7 @@ import com.agents.agent.core.AgentEvent;
 import com.agents.agent.core.AgentPattern;
 import com.agents.agent.core.ErrorEvent;
 import com.agents.agent.core.FinalAnswerEvent;
+import com.agents.agent.core.ReasoningDeltaEvent;
 import com.agents.agent.core.ReasoningEvent;
 import com.agents.agent.core.ToolCallEvent;
 import com.agents.agent.core.ToolResultEvent;
@@ -15,7 +16,6 @@ import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.ToolResponseMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
-import org.springframework.ai.chat.model.MessageAggregator;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.deepseek.DeepSeekAssistantMessage;
 import org.springframework.ai.deepseek.DeepSeekChatModel;
@@ -25,21 +25,21 @@ import org.springframework.ai.support.ToolCallbacks;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Sinks;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * ReAct（推理+行动）模式实现 - 手动工具调用循环。
  *
- * <p>使用 DeepSeekChatModel 直接手动循环（D-01），每轮流式发射 Thought（ReasoningEvent），
- * 工具调用时发射 ToolCallEvent/ToolResultEvent，使用 MessageAggregator 聚合多 chunk tool_call
- * 参数（SSE-06），max_iterations=10 防止无限循环（TOOL-05），工具调用去重（TOOL-06），
+ * <p>使用 DeepSeekChatModel 直接手动循环（D-01），每轮调用期间逐 chunk 流式发射
+ * {@link ReasoningDeltaEvent}（Thought 卡片逐字生长），轮末由 {@link StreamingLlmCall}
+ * 聚合的完整响应发射整段 ReasoningEvent（权威态，前端替换临时卡片）；
+ * 工具调用时发射 ToolCallEvent/ToolResultEvent，聚合保证多 chunk tool_call 参数完整（SSE-06），
+ * max_iterations=10 防止无限循环（TOOL-05），工具调用去重（TOOL-06），
  * system prompt 包含收敛条件（TOOL-07），<final_answer> 标签优先检测最终答案（D-05）。
  *
  * <p>D-01: 使用 DeepSeekChatModel 直接手动循环，而非 ToolCallingManager 或 ToolCallingAdvisor。
@@ -120,13 +120,13 @@ public class ReActAgentPattern implements AgentPattern {
                     // Create prompt with current message history and options
                     Prompt prompt = new Prompt(messages, options);
 
-                    // Stream and aggregate using MessageAggregator
-                    AtomicReference<ChatResponse> aggregatedRef = new AtomicReference<>();
-                    new MessageAggregator()
-                            .aggregate(chatModel.stream(prompt), aggregatedRef::set)
-                            .blockLast();
+                    // Stream and aggregate: emit ReasoningDeltaEvent per chunk during streaming,
+                    // aggregate the full response for control-flow decisions (tool calls / final answer)
+                    ChatResponse aggregated = StreamingLlmCall.streamAndAggregate(
+                            chatModel.stream(prompt),
+                            delta -> sink.next(new ReasoningDeltaEvent(Instant.now(), delta)),
+                            delta -> sink.next(new ReasoningDeltaEvent(Instant.now(), delta)));
 
-                    ChatResponse aggregated = aggregatedRef.get();
                     if (aggregated == null || aggregated.getResult() == null) {
                         break;
                     }

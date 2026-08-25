@@ -9,12 +9,12 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for {@link AgentEvent} sealed interface and its 18 record subtypes.
+ * Unit tests for {@link AgentEvent} sealed interface and its 20 record subtypes.
  *
  * <p>Verifies:
  * <ul>
- *   <li>D-04: All 18 records can be instantiated and implement AgentEvent
- *       (Phase 10: +RolePmEvent, +RoleDevEvent, +RoleTesterEvent)</li>
+ *   <li>D-04: All 20 records can be instantiated and implement AgentEvent
+ *       (流式改造: +ReasoningDeltaEvent, +RoleSpeechDeltaEvent)</li>
  *   <li>D-02: ts() accessor is available on all records (only common method)</li>
  *   <li>D-04: Record component accessors return values passed to constructor</li>
  * </ul>
@@ -44,10 +44,12 @@ class AgentEventTest {
         AgentEvent rolePm = new RolePmEvent(now, 1, "PM", "pm content");
         AgentEvent roleDev = new RoleDevEvent(now, 1, "Dev", "dev content");
         AgentEvent roleTester = new RoleTesterEvent(now, 1, "Tester", "tester content");
+        AgentEvent reasoningDelta = new ReasoningDeltaEvent(now, "thought delta");
+        AgentEvent roleSpeechDelta = new RoleSpeechDeltaEvent(now, 1, "PM", "speech delta");
         AgentEvent finalAnswer = new FinalAnswerEvent(now, "The answer is 42");
         AgentEvent error = new ErrorEvent(now, "Something went wrong");
 
-        // All 18 instances are AgentEvent subtypes
+        // All 20 instances are AgentEvent subtypes
         assertThat(reasoning).isInstanceOf(AgentEvent.class);
         assertThat(toolCall).isInstanceOf(AgentEvent.class);
         assertThat(toolResult).isInstanceOf(AgentEvent.class);
@@ -64,6 +66,8 @@ class AgentEventTest {
         assertThat(rolePm).isInstanceOf(AgentEvent.class);
         assertThat(roleDev).isInstanceOf(AgentEvent.class);
         assertThat(roleTester).isInstanceOf(AgentEvent.class);
+        assertThat(reasoningDelta).isInstanceOf(AgentEvent.class);
+        assertThat(roleSpeechDelta).isInstanceOf(AgentEvent.class);
         assertThat(finalAnswer).isInstanceOf(AgentEvent.class);
         assertThat(error).isInstanceOf(AgentEvent.class);
 
@@ -84,6 +88,8 @@ class AgentEventTest {
         assertThat(rolePm.ts()).isNotNull();
         assertThat(roleDev.ts()).isNotNull();
         assertThat(roleTester.ts()).isNotNull();
+        assertThat(reasoningDelta.ts()).isNotNull();
+        assertThat(roleSpeechDelta.ts()).isNotNull();
         assertThat(finalAnswer.ts()).isNotNull();
         assertThat(error.ts()).isNotNull();
 
@@ -98,6 +104,8 @@ class AgentEventTest {
         assertThat(rolePm.ts()).isEqualTo(now);
         assertThat(roleDev.ts()).isEqualTo(now);
         assertThat(roleTester.ts()).isEqualTo(now);
+        assertThat(reasoningDelta.ts()).isEqualTo(now);
+        assertThat(roleSpeechDelta.ts()).isEqualTo(now);
         assertThat(error.ts()).isEqualTo(now);
     }
 
@@ -239,6 +247,8 @@ class AgentEventTest {
             new RolePmEvent(now, 1, "PM", "pm content"),
             new RoleDevEvent(now, 1, "Dev", "dev content"),
             new RoleTesterEvent(now, 1, "Tester", "tester content"),
+            new ReasoningDeltaEvent(now, "thought delta"),
+            new RoleSpeechDeltaEvent(now, 1, "PM", "speech delta"),
             new FinalAnswerEvent(now, "a"),
             new ErrorEvent(now, "e"),
         };
@@ -273,6 +283,8 @@ class AgentEventTest {
             case RolePmEvent r -> "role-pm:" + r.round() + ":" + r.content();
             case RoleDevEvent r -> "role-dev:" + r.round() + ":" + r.content();
             case RoleTesterEvent r -> "role-tester:" + r.round() + ":" + r.content();
+            case ReasoningDeltaEvent r -> "reasoning-delta:" + r.content();
+            case RoleSpeechDeltaEvent r -> "role-speech-delta:" + r.round() + ":" + r.role() + ":" + r.content();
             case FinalAnswerEvent f -> "final:" + f.content();
             case ErrorEvent e -> "error:" + e.message();
         };
