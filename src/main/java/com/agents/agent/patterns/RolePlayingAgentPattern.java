@@ -7,10 +7,13 @@ import com.agents.agent.core.ErrorEvent;
 import com.agents.agent.core.FinalAnswerEvent;
 import com.agents.agent.core.RoleDevEvent;
 import com.agents.agent.core.RolePmEvent;
+import com.agents.agent.core.RoleSpeechDeltaEvent;
 import com.agents.agent.core.RoleTesterEvent;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.FluxSink;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -27,10 +30,13 @@ import java.util.List;
  *
  * <p>D-05: 仅注入 {@link ChatClient.Builder}，不注入 ToolRegistry
  * （Role-playing 为纯多角色协作，不需要外部工具）。使用默认模型
- * （application.yml 已配置 deepseek-chat，不额外指定模型）。
+ * （application.yml D-05 已配置 deepseek-reasoner）。
  *
- * <p>所有角色发言均为 {@code .call().content()} 一次性完整返回（非流式），
- * 事件逐个发射（非全部完成后一次性发射），前端收到完整事件后立即渲染。
+ * <p>流式改造（quick-260825-gtx）: 每个角色发言经 {@code .stream()} 逐 chunk 发射
+ * {@link RoleSpeechDeltaEvent}（(round, role) 为分组键，前端气泡逐字生长），
+ * 发言完成后仍发完整 {@code Role*Event}（权威态，前端替换临时气泡）；
+ * 总结轮以多 chunk {@link FinalAnswerEvent} 流式发射。reasoning_content 在
+ * 角色发言中丢弃（与现状仅取 content 对齐）。
  */
 @Component
 public class RolePlayingAgentPattern implements AgentPattern {
@@ -156,17 +162,22 @@ public class RolePlayingAgentPattern implements AgentPattern {
     // ===== Role Call Helper =====
 
     /**
-     * 执行单次角色 LLM 调用（per T-10-01: null 降级为空字符串，永不传 null）。
+     * 执行单次角色 LLM 调用（流式）：逐 chunk 发射 {@link RoleSpeechDeltaEvent}，
+     * 同时聚合完整响应。per T-10-01: null 降级为空字符串，永不返回 null。
+     *
+     * <p>reasoning_content 在角色发言中丢弃（与现状仅取 content 对齐）。
      */
-    private String callRole(String systemPrompt, String userPrompt) {
-        String content = chatClientBuilder
+    private String streamRole(String systemPrompt, String userPrompt, int round, String role,
+                              FluxSink<AgentEvent> sink) {
+        Flux<ChatResponse> flux = chatClientBuilder
                 .defaultSystem(systemPrompt)
                 .build()
                 .prompt()
                 .user(u -> u.text(userPrompt))
-                .call()
-                .content();
-        return content != null ? content : "";
+                .stream()
+                .chatResponse();
+        return StreamingLlmCall.streamContent(flux,
+                delta -> sink.next(new RoleSpeechDeltaEvent(Instant.now(), round, role, delta)));
     }
 
     // ===== Execute =====
@@ -182,41 +193,42 @@ public class RolePlayingAgentPattern implements AgentPattern {
 
                     // ===== PM 调用 =====
                     String pmUserPrompt = buildHistoryPrompt(history, ctx.question());
-                    String pmContent = callRole(
+                    String pmContent = streamRole(
                             PM_SYSTEM_PROMPT.replace("{question}", ctx.question()),
-                            pmUserPrompt);
+                            pmUserPrompt, round, ROLE_PM, sink);
                     sink.next(new RolePmEvent(Instant.now(), round, ROLE_PM, pmContent));
                     history.add(new Utterance(round, ROLE_PM, pmContent));
 
                     // ===== Dev 调用 =====
                     String devUserPrompt = buildHistoryPrompt(history, ctx.question());
-                    String devContent = callRole(
+                    String devContent = streamRole(
                             DEV_SYSTEM_PROMPT.replace("{question}", ctx.question()),
-                            devUserPrompt);
+                            devUserPrompt, round, ROLE_DEV, sink);
                     sink.next(new RoleDevEvent(Instant.now(), round, ROLE_DEV, devContent));
                     history.add(new Utterance(round, ROLE_DEV, devContent));
 
                     // ===== Tester 调用 =====
                     String testerUserPrompt = buildHistoryPrompt(history, ctx.question());
-                    String testerContent = callRole(
+                    String testerContent = streamRole(
                             TESTER_SYSTEM_PROMPT.replace("{question}", ctx.question()),
-                            testerUserPrompt);
+                            testerUserPrompt, round, ROLE_TESTER, sink);
                     sink.next(new RoleTesterEvent(Instant.now(), round, ROLE_TESTER, testerContent));
                     history.add(new Utterance(round, ROLE_TESTER, testerContent));
                 }
 
-                // ===== 总结调用 (per D-04) =====
+                // ===== 总结调用 (per D-04) - 流式发射多 chunk FinalAnswerEvent =====
                 String conversation = formatConversation(history);
-                String summary = chatClientBuilder
+                Flux<ChatResponse> summaryFlux = chatClientBuilder
                         .defaultSystem(SUMMARY_PROMPT
                                 .replace("{question}", ctx.question())
                                 .replace("{conversation}", conversation))
                         .build()
                         .prompt()
                         .user(u -> u.text("请总结以上对话"))
-                        .call()
-                        .content();
-                sink.next(new FinalAnswerEvent(Instant.now(), summary != null ? summary : ""));
+                        .stream()
+                        .chatResponse();
+                StreamingLlmCall.streamContent(summaryFlux,
+                        delta -> sink.next(new FinalAnswerEvent(Instant.now(), delta)));
                 sink.complete();
 
             } catch (Exception ex) {
