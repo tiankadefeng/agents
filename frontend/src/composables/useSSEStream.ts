@@ -3,6 +3,7 @@
 import type {
   AgentEventName,
   ReasoningEvent,
+  ReasoningDeltaEvent,
   FinalAnswerEvent,
   ErrorEvent,
   ToolCallEvent,
@@ -20,13 +21,16 @@ import type {
   RolePmEvent,
   RoleDevEvent,
   RoleTesterEvent,
+  RoleSpeechDeltaEvent,
 } from '@/types/agent'
 
 /**
  * SSE stream options - Phase 2 D-01 event-name routing.
  *
- * Phase 10 routing covers 18 SSE event names:
+ * Phase 10 routing covers 18 complete SSE event names + 流式改造新增 2 个 delta 事件名：
  * - ReasoningEvent -> onReasoning
+ * - ReasoningDeltaEvent -> onReasoningDelta（流式改造新增，ReAct Thought 增量，
+ *   临时态：任何非 delta 事件到达即关闭当前临时卡片，轮末由完整 ReasoningEvent 收口）
  * - FinalAnswerEvent -> onFinal
  * - ErrorEvent -> onError
  * - ToolCallEvent -> onToolCall (Phase 5 ReAct)
@@ -44,6 +48,8 @@ import type {
  * - RolePmEvent -> onRolePm (Phase 10 Role-playing)
  * - RoleDevEvent -> onRoleDev (Phase 10 Role-playing)
  * - RoleTesterEvent -> onRoleTester (Phase 10 Role-playing)
+ * - RoleSpeechDeltaEvent -> onRoleSpeechDelta（流式改造新增，角色发言增量，
+ *   (round, role) 为分组键，对应完整 Role*Event 到达即替换临时气泡）
  *
  * Other event names are defined in the type system
  * but not emitted yet. They will be added in Phase 8+ when patterns
@@ -57,6 +63,7 @@ import type {
  */
 export interface SSEStreamOptions {
   onReasoning: (content: string, ev: ReasoningEvent) => void
+  onReasoningDelta?: (content: string, ev: ReasoningDeltaEvent) => void
   onFinal: (content: string, ev: FinalAnswerEvent) => void
   onError: (message: string, ev: ErrorEvent) => void
   onToolCall?: (ev: ToolCallEvent) => void
@@ -78,6 +85,8 @@ export interface SSEStreamOptions {
   onRolePm?: (ev: RolePmEvent) => void
   onRoleDev?: (ev: RoleDevEvent) => void
   onRoleTester?: (ev: RoleTesterEvent) => void
+  // 流式改造新增
+  onRoleSpeechDelta?: (ev: RoleSpeechDeltaEvent) => void
   signal?: AbortSignal
 }
 
@@ -159,6 +168,9 @@ export async function startSSEStream(
           case 'ReasoningEvent':
             options.onReasoning(data.content, data)
             break
+          case 'ReasoningDeltaEvent':
+            options.onReasoningDelta?.(data.content, data)
+            break
           case 'FinalAnswerEvent':
             options.onFinal(data.content, data)
             break
@@ -209,6 +221,9 @@ export async function startSSEStream(
             break
           case 'RoleTesterEvent':
             options.onRoleTester?.(data as RoleTesterEvent)
+            break
+          case 'RoleSpeechDeltaEvent':
+            options.onRoleSpeechDelta?.(data as RoleSpeechDeltaEvent)
             break
           default:
             // Silently ignore unmapped event names (forward compat,

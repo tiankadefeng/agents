@@ -16,6 +16,28 @@ const selectedPatternId = ref<string>('cot')
 const reasoningText = shallowRef<string>('')
 const finalText = shallowRef<string>('')
 
+// 流式改造：临时态 delta 状态（delta 事件拼接，完整事件到达后收口替换；
+// 不进 agentEvents 时间线，保持事件序列干净）
+const activeThought = shallowRef<string>('')
+const activeSpeech = shallowRef<{ round: number; role: string; content: string } | null>(null)
+
+// 分组协议：任何非 delta 事件到达即关闭当前 thought 临时卡片
+// （后端保证一轮内 delta 连续，轮间必隔完整事件）
+function closeActiveThought() {
+  if (activeThought.value) {
+    activeThought.value = ''
+  }
+}
+
+// 分组协议：完整 Role*Event 到达即收口匹配 (round, role) 的临时气泡
+function closeRoleSpeech(round: number, role: string) {
+  if (activeSpeech.value
+      && activeSpeech.value.round === round
+      && activeSpeech.value.role === role) {
+    activeSpeech.value = null
+  }
+}
+
 // Error alert uses ref (not streaming, single string)
 const errorAlert = ref<string>('')
 
@@ -59,6 +81,8 @@ async function submit(question: string) {
   finalText.value = ''
   errorAlert.value = ''
   agentEvents.value = []
+  activeThought.value = ''
+  activeSpeech.value = null
   totTree.clear() // Phase 8: 每次提交重置树状态
   status.value = 'thinking'
   streamAborted = false
@@ -79,6 +103,7 @@ async function submit(question: string) {
       requestBody,
       {
         onReasoning: (content, ev) => {
+          closeActiveThought()
           if (selectedPatternId.value === 'reflexion' || selectedPatternId.value === 'roleplay') {
             // Reflexion/Role-playing 模式：Generator/角色发言为 call() 一次性调用，
             // 不产生流式 ReasoningEvent。若收到则忽略，避免与 AttemptEvent/Role*Event 重复
@@ -91,10 +116,17 @@ async function submit(question: string) {
           }
           status.value = 'thinking'
         },
+        // 流式改造：ReAct Thought 增量 -> 临时卡片逐字生长，不进时间线
+        onReasoningDelta: (content) => {
+          activeThought.value += content
+          status.value = 'thinking'
+        },
         onToolCall: (ev) => {
+          closeActiveThought()
           agentEvents.value = [...agentEvents.value, ev]
         },
         onToolResult: (ev) => {
+          closeActiveThought()
           agentEvents.value = [...agentEvents.value, ev]
         },
         onSubQuestion: (ev) => {
@@ -132,20 +164,38 @@ async function submit(question: string) {
           agentEvents.value = [...agentEvents.value, ev]
         },
         // Phase 10: Role-playing 事件回调 -- 全部经 agentEvents 传递，不追加 reasoningText
+        // 流式改造：完整事件到达即收口对应 (round, role) 的临时气泡
         onRolePm: (ev) => {
+          closeRoleSpeech(ev.round, ev.role)
           agentEvents.value = [...agentEvents.value, ev]
         },
         onRoleDev: (ev) => {
+          closeRoleSpeech(ev.round, ev.role)
           agentEvents.value = [...agentEvents.value, ev]
         },
         onRoleTester: (ev) => {
+          closeRoleSpeech(ev.round, ev.role)
           agentEvents.value = [...agentEvents.value, ev]
         },
+        // 流式改造：角色发言增量 -> 临时气泡逐字生长，(round, role) 为分组键
+        onRoleSpeechDelta: (ev) => {
+          if (activeSpeech.value
+              && activeSpeech.value.round === ev.round
+              && activeSpeech.value.role === ev.role) {
+            activeSpeech.value = { ...activeSpeech.value, content: activeSpeech.value.content + ev.content }
+          } else {
+            activeSpeech.value = { round: ev.round, role: ev.role, content: ev.content }
+          }
+          status.value = 'thinking'
+        },
         onFinal: (content, _ev) => {
+          closeActiveThought()
           finalText.value += content
           status.value = 'answering'
         },
         onError: (message, _ev) => {
+          closeActiveThought()
+          activeSpeech.value = null
           errorAlert.value = message
           status.value = 'error'
           streamError = true
@@ -182,6 +232,8 @@ function clear() {
   finalText.value = ''
   errorAlert.value = ''
   agentEvents.value = []
+  activeThought.value = ''
+  activeSpeech.value = null
   status.value = 'idle'
 }
 </script>
@@ -226,6 +278,8 @@ function clear() {
             :status="status"
             :tot-tree="totTree"
             :selected-pattern="selectedPatternId"
+            :active-thought="activeThought"
+            :active-speech="activeSpeech"
           />
 
           <FinalAnswer :final-text="finalText" :status="status" />

@@ -14,6 +14,9 @@ const props = defineProps<{
   // Phase 8 新增
   totTree?: TotTree
   selectedPattern?: string
+  // 流式改造新增：临时态 delta（完整事件到达后收口替换）
+  activeThought?: string
+  activeSpeech?: { round: number; role: string; content: string } | null
 }>()
 
 // Default collapsed (D-03)
@@ -128,11 +131,14 @@ function isLastRound(round: number): boolean {
     && round === reflexionRounds.value[reflexionRounds.value.length - 1]
 }
 
-// Phase 10: Role-playing 轮次分组渲染模式 -- 选中 roleplay 且事件列表包含 Role*Event
+// Phase 10: Role-playing 轮次分组渲染模式 -- 选中 roleplay 且（有 Role*Event 或
+// 流式改造的临时气泡存在，首个 delta 到达即建卡，无需等首个完整事件）
 const isRoleplayMode = computed(() =>
   props.selectedPattern === 'roleplay'
-  && !!props.events
-  && props.events.some(ev => 'role' in ev && 'content' in ev)
+  && (
+    (!!props.events && props.events.some(ev => 'role' in ev && 'content' in ev))
+    || !!props.activeSpeech
+  )
 )
 
 // Phase 10: 提取 Role-playing 所有 round 号，去重排序
@@ -196,6 +202,14 @@ function roleConfig(role: string): { icon: string; name: string; color: string }
           aria-live="polite"
           :aria-busy="status === 'thinking'"
         >{{ reasoningText }}</pre>
+          <!-- 流式改造：ReAct 首轮（尚无完整事件）的临时思考卡片 -->
+          <pre
+            v-else-if="activeThought"
+            class="reasoning-content"
+            role="log"
+            aria-live="polite"
+            :aria-busy="status === 'thinking'"
+          >{{ activeThought }}<span class="streaming-cursor">▍</span></pre>
         <div v-else class="empty-state">
           暂无推理过程。提交问题后，这里会流式显示 DeepSeek 的思考链（reasoning_content）。
         </div>
@@ -307,6 +321,30 @@ function roleConfig(role: string): { icon: string; name: string; color: string }
               </template>
             </div>
           </template>
+
+          <!-- 流式改造：临时角色发言气泡（首个 delta 到达即建卡，(round, role) 为分组键，
+               完成后由对应完整 Role*Event 收口替换）-->
+          <template v-if="activeSpeech">
+            <div class="round-divider">
+              <span class="round-divider-text">Round {{ activeSpeech.round }}</span>
+            </div>
+            <div class="roleplay-round-group">
+              <div class="roleplay-card streaming" :style="{ borderLeftColor: roleConfig(activeSpeech.role).color }">
+                <div class="roleplay-header">
+                  <span class="roleplay-avatar" :style="{ background: roleConfig(activeSpeech.role).color }">
+                    {{ roleConfig(activeSpeech.role).icon }}
+                  </span>
+                  <span class="roleplay-name" :style="{ color: roleConfig(activeSpeech.role).color }">
+                    {{ roleConfig(activeSpeech.role).name }} ({{ activeSpeech.role }})
+                  </span>
+                  <span class="roleplay-round-tag">第 {{ activeSpeech.round }} 轮 · 正在发言...</span>
+                </div>
+                <div class="roleplay-content">
+                  {{ activeSpeech.content }}<span class="streaming-cursor">▍</span>
+                </div>
+              </div>
+            </div>
+          </template>
         </div>
       </template>
 
@@ -394,6 +432,14 @@ function roleConfig(role: string): { icon: string; name: string; color: string }
             </div>
             <!-- FinalAnswerEvent and ErrorEvent are skipped (handled by FinalAnswer component and el-alert) -->
           </template>
+
+          <!-- 流式改造：ReAct 临时思考卡片（activeThought 非空时渲染，任何非 delta 事件到达即关闭）-->
+          <div v-if="activeThought" class="timeline-item thought streaming">
+            <span class="dot thought"></span>
+            <div class="label">思考中 (Thought) <span class="streaming-badge">流式</span></div>
+            <div class="content">{{ activeThought }}<span class="streaming-cursor">▍</span></div>
+          </div>
+
           <div v-if="events.length === 0" class="empty-state">
             暂无推理过程。提交问题后，这里会流式显示推理过程。
           </div>
@@ -405,6 +451,33 @@ function roleConfig(role: string): { icon: string; name: string; color: string }
 </template>
 
 <style scoped>
+.streaming-cursor {
+  animation: blink 1s step-end infinite;
+  color: var(--design-color-primary);
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+.streaming-badge {
+  font-size: 11px;
+  color: #fff;
+  background: var(--design-color-primary);
+  border-radius: 4px;
+  padding: 0 6px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.roleplay-card.streaming {
+  opacity: 0.85;
+}
+
+.timeline-item.thought.streaming {
+  opacity: 0.85;
+}
+
 .reasoning-panel {
   background: #FFF6E6;
   border-left: 3px solid var(--design-color-warning);

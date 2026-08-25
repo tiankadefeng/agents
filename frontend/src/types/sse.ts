@@ -5,10 +5,13 @@
  * D-01: SSE event field = ev.getClass().getSimpleName() (PascalCase).
  * Phase 2 D-01 推翻 Phase 1 D-02 的 event=message 方案。
  *
- * 18 个 event name 与后端 record 类名严格一致（大小写敏感）。
+ * 20 个 event name 与后端 record 类名严格一致（大小写敏感）。
+ * 流式改造新增 ReasoningDeltaEvent / RoleSpeechDeltaEvent（临时态增量事件，
+ * 完成后由对应完整事件收口，前端用完整事件替换 delta 拼接的临时卡片）。
  */
 export type AgentEventName =
   | 'ReasoningEvent'
+  | 'ReasoningDeltaEvent' // 流式改造新增（ReAct Thought 增量）
   | 'ToolCallEvent'
   | 'ToolResultEvent'
   | 'SubQuestionEvent'
@@ -24,6 +27,7 @@ export type AgentEventName =
   | 'RolePmEvent'       // Phase 10 新增
   | 'RoleDevEvent'      // Phase 10 新增
   | 'RoleTesterEvent'   // Phase 10 新增
+  | 'RoleSpeechDeltaEvent' // 流式改造新增（Role-play 发言增量）
   | 'FinalAnswerEvent'
   | 'ErrorEvent'
 
