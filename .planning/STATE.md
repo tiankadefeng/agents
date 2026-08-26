@@ -4,8 +4,8 @@ milestone: v1.0
 milestone_name: milestone
 status: ready_to_plan
 stopped_at: Phase 10 complete (3/3) — ready to discuss Phase 11
-last_updated: 2026-08-21T12:25:03.459Z
-last_activity: 2026-08-21 -- Phase 10 execution started
+last_updated: 2026-08-24T13:58:00.000Z
+last_activity: 2026-08-24 -- Completed quick task 260824-tz8 (GlobalExceptionHandler SSE fix)
 progress:
   total_phases: 12
   completed_phases: 10
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-08-04)
 Phase: 11
 Plan: Not started
 Status: Ready to plan
-Last activity: 2026-08-21
+Last activity: 2026-08-25 - Completed quick task 260825-gtx: ReAct + Role-playing 真流式输出
 
 Progress: [██████████] 100%
 
@@ -91,6 +91,13 @@ None yet.
 - [Phase 9]: Reflexion LLM-as-judge prompt design needs verification. Research flag MEDIUM. Recommend `/gsd:plan-phase --research-phase 9`.
 - [Phase 11]: MCP transport choice (Streamable HTTP) and exact 2.0 config keys need verification. Research flag MEDIUM. Recommend `/gsd:plan-phase --research-phase 11`.
 - [Phase 1]: DeepSeek model availability - default to deepseek-chat/deepseek-reasoner; if account has V4 access, switch. Validate in Phase 1.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260824-tz8 | 修复 GlobalExceptionHandler：@ExceptionHandler 返回裸 Flux 不可序列化，改为手写 SSE ErrorEvent 帧（D-08 契约保留）+ WARN 日志 + 回归测试 | 2026-08-24 | 4228602 | [260824-tz8-fix-globalexceptionhandler-flux-serializ](./quick/260824-tz8-fix-globalexceptionhandler-flux-serializ/) |
+| 260825-gtx | ReAct + Role-playing 真流式输出：新增 ReasoningDeltaEvent/RoleSpeechDeltaEvent 临时态事件 + StreamingLlmCall 共享原语 + 前端临时卡片/气泡逐字生长渲染 | 2026-08-25 | e1f5760 | [260825-gtx-streaming-react-roleplay](./quick/260825-gtx-streaming-react-roleplay/) |
 
 ## Deferred Items
 

@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智能体推理范式与编排架构教学手册</title>
+<meta name="description" content="9 种推理范式 · 5 种编排方式 · 从 Demo 到生产的完整认知地图。配套 Agent 设计模式教学案例库的理论篇。">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <p class="masthead-kicker">AGENT 设计模式教学案例库 · 理论篇</p>
+  <h1>智能体推理范式与编排架构教学手册</h1>
+  <p class="masthead-sub">9 种推理范式 · 5 种编排方式 · 从 Demo 到生产的完整认知地图</p>
+  <div class="masthead-rule"></div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <div class="tabs-inner">
+    <button class="tab-btn" data-target="ch1"><span class="tab-no">01</span>概述</button>
+    <button class="tab-btn" data-target="ch2"><span class="tab-no">02</span>ReAct 基石</button>
+    <button class="tab-btn" data-target="ch3"><span class="tab-no">03</span>纯思维类</button>
+    <button class="tab-btn" data-target="ch4"><span class="tab-no">04</span>规划执行类</button>
+    <button class="tab-btn" data-target="ch5"><span class="tab-no">05</span>反馈迭代类</button>
+    <button class="tab-btn" data-target="ch6"><span class="tab-no">06</span>补充范式</button>
+    <button class="tab-btn" data-target="ch7"><span class="tab-no">07</span>编排方式</button>
+    <button class="tab-btn" data-target="ch8"><span class="tab-no">08</span>组合架构</button>
+    <button class="tab-btn" data-target="ch9"><span class="tab-no">09</span>生产差距</button>
+    <button class="tab-btn" data-target="ch10"><span class="tab-no">10</span>选型总结</button>
+  </div>
+</nav>
+
+<main class="content">
+
+<!-- ============ 第一章 概述 ============ -->
+<section class="chapter" id="ch1">
+  <header class="ch-head">
+    <p class="ch-no">第一章</p>
+    <h2 class="ch-title">智能体推理与执行概述</h2>
+    <p class="ch-lead">在动手搭建智能体之前，先建立两张地图：一张"思维地图"——智能体如何推理（推理范式）；一张"组织地图"——多个推理单元如何协同（编排架构）。本手册十章，讲清这两张图。</p>
+  </header>
+
+  <h3>1.1 为什么智能体需要推理范式与编排架构</h3>
+  <p>大语言模型本质是一个"下一个词预测器"：直接把复杂任务抛给它，它既不会主动分解问题，也不知道何时该查资料、何时该验证自己的答案。<strong>推理范式</strong>就是给模型的一套"怎么思考"的工作方法——先想后做、边想边做、做了再改；<strong>编排架构</strong>则是把一个个"思考单元"组织成可靠系统的骨架——谁先谁后、何时分支、何时汇合。</p>
+  <p>没有范式，答案质量完全靠运气，模型"想到哪算哪"；没有编排，单次推理无法覆盖需要多步骤、多工具、多角色协作的真实任务。二者合起来，才构成智能体应用的地基。</p>
+  <div class="note">一个类比：<strong>推理范式</strong> = 单个员工的工作方法论（CoT、ReAct……）；<strong>编排方式</strong> = 团队的流程制度（顺序、并行、循环……）；<strong>运行底座</strong> = 办公场地与工具箱（LangGraph、Spring AI……）。方法论再好，没有制度和场地，也做不成项目。</div>
+
+  <h3>1.2 核心概念边界：推理范式、编排方式、运行底座</h3>
+  <p>三个概念在日常讨论中经常被混用，先划清边界：</p>
+  <div class="tbl-wrap">
+    <table class="data">
+      <thead>
+        <tr><th>概念</th><th>回答的问题</th><th>关注层次</th><th>典型代表</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>推理范式</td><td>单个智能体"怎么思考"</td><td>模型推理过程</td><td>CoT、ToT、ReAct、Reflexion……</td></tr>
+        <tr><td>编排方式</td><td>多个步骤 / 智能体"怎么协作"</td><td>系统控制流</td><td>顺序、判断、循环、并行、状态机</td></tr>
+        <tr><td>运行底座</td><td>程序"跑在哪、怎么管控"</td><td>工程运行时</td><td>LangGraph、Spring AI、Agent Harness</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>1.3 推理范式三大分类</h3>
+  <p>按"推理发生在哪里、是否引入行动与反馈"，九种经典推理范式可以分为三大类：</p>
+  <div class="flow">
+    <div class="flow-node start">智能体推理范式</div>
+    <div class="flow-arrow"></div>
+    <div class="flow-branch">
+      <div class="flow-col">
+        <div class="flow-arrow"><span class="alabel">纯思维类 · 只靠"想"</span></div>
+        <div class="flow-node small">CoT 思维链</div>
+        <div class="flow-node small">Self-Ask 自问自答</div>
+        <div class="flow-node small">ToT 思维树</div>
+        <div class="flow-node small">Self-Consistency</div>
+        <div class="flow-node small">CoV 验证链</div>
+        <div class="flow-node small">GoT 思维图</div>
+      </div>
+      <div class="flow-col">
+        <div class="flow-arrow"><span class="alabel">规划执行类 · 想了再做</span></div>
+        <div class="flow-node small llm">ReAct 推理-行动 ★基石</div>
+        <div class="flow-node small">Plan-and-Execute</div>
+      </div>
+      <div class="flow-col">
+        <div class="flow-arrow"><span class="alabel">反馈迭代类 · 做了再改</span></div>
+        <div class="flow-node small">Reflexion 反思迭代</div>
+      </div>
+    </div>
+  </div>
+  <p class="fig-caption">图 1-1　推理范式三大分类知识地图</p>
+  <p><strong>纯思维类</strong>全部推理发生在模型内部，靠改变思维的组织形式（链、树、分解、投票、验证、图）提升质量；<strong>规划执行类</strong>把推理落到行动上——要么边想边做（ReAct），要么先规划再执行（Plan-and-Execute）；<strong>反馈迭代类</strong>引入"评估—反思—改进"闭环，让答案在多轮循环中越改越好。</p>
+  <div class="note">ReAct 是 2022 年提出的奠基范式，现代智能体框架的 Agent Loop 几乎都是它的变体，因此单独成章（第二章）先讲。本项目案例库已实现其中 <strong>6 种范式</strong>的可运行交互演示（正文中带"本项目可演示"徽章的范式），并额外提供 Role-playing 多角色协作模式。</div>
+
+  <h3>1.4 全文知识地图与学习路径</h3>
+  <div class="flow pipeline">
+    <div class="flow-node start small">ReAct 基石</div>
+    <div class="flow-arrow"></div>
+    <div class="flow-node small">三大类范式</div>
+    <div class="flow-arrow"></div>
+    <div class="flow-node small">编排方式</div>
+    <div class="flow-arrow"></div>
+    <div class="flow-node small">组合架构</div>
+    <div class="flow-arrow"></div>
+    <div class="flow-node end small">生产化与选型</div>
+  </div>
+  <p class="fig-caption">图 1-2　全书学习路径</p>
+  <p>一句话路径：先掌握"最小可用智能体"（第二章 ReAct），再横向铺开九种范式（第三至六章），上升到系统层理解编排与组合（第七、八章），最后对照生产要求查漏补缺、学会选型（第九、十章）。</p>
+</section>
+
+<!-- ============ 第二章 ReAct 基石 ============ -->
+<section class="chapter" id="ch2">
+  <header class="ch-head">
+    <p class="ch-no">第二章</p>
+    <h2 class="ch-title">ReAct 推理-行动框架<span class="ch-en">Reasoning + Acting</span></h2>
+    <p class="ch-lead">让模型把"推理"与"行动"交织进行——想一步、做一步、看结果、再想下一步。今天几乎所有智能体框架的 Agent Loop，都是 ReAct 的变体。<span class="badge badge-demo">本项目可演示</span></p>
+  </header>
+
+  <h3>2.1 范式核心解释</h3>
+  <p>ReAct 的核心是一个三元素循环：<span class="term">Thought</span>（思考）→ <span class="term">Action</span>（行动）→ <span class="term">Observation</span>（观察）：</p>
+  <ul>
+    <li><strong>Thought</strong>：模型显式写出当前一步的推理——"我已知道什么、还缺什么、下一步该做什么"；</li>
+    <li><strong>Action</strong>：据此调用一个工具（搜索引擎、计算器、数据库查询、代码执行……）；</li>
+    <li><strong>Observation</strong>：把工具返回的结果追加进上下文，作为下一轮思考的输入。</li>
+  </ul>
+  <p>循环往复，直到模型判断信息已足够，输出最终答案（Final Answer）。</p>
+  <p>关键洞察在于<strong>把推理轨迹显式写进上下文</strong>：模型能依据环境反馈及时纠正方向。与"只推理不行动"（纯思维类，容易幻觉）和"只行动不推理"（盲目连环调工具）相比，ReAct 显著降低了幻觉率与无效调用，是工具型智能体的默认选择。</p>
+
+  <h3>2.2 标准执行流程</h3>
+  <div class="flow">
+    <div class="flow-node start">用户问题</div>
+    <div class="flow-arrow"></div>
+    <div class="flow-node llm"><b>Thought</b><small>分析问题，判断还缺什么信息</small></div>
+    <div class="flow-arrow"></div>
+    <div class="flow-node tool"><b>Action</b><small>选择并调用工具</small></div>
+    <div class="flow-arrow"></div>
+    <div class="flow-node"><b>Observation</b><small>获取工具返回结果，写入上下文</small></div>
+    <div class="flow-arrow"></div>
+    <div class="flow-node decision"><b>信息足够？</b></div>
+    <div class="flow-branch">
+      <div class="flow-col">
+        <div class="flow-arrow"><span class="alabel">是</span></div>
+        <div class="flow-node end">Final Answer<small>输出最终答案</small></div>
+      </div>
+      <div class="flow-col">
+        <div class="flow-arrow"><span class="alabel">否 · 继续循环 ↺</span></div>
+        <div class="flow-node llm"><b>回到 Thought</b><small>基于观察结果继续推理</small></div>
+      </div>
+    </div>
+  </div>
+  <p class="fig-caption">图 2-1　ReAct 标准执行流程：思考—行动—观察闭环</p>
+
+  <h3>2.3 适用场景与局限性</h3>
+  <div class="kv-grid">
+    <div class="kv good">
+      <h5>✓ 适用场景</h5>
+      <ul>
+        <li>需要外部实时信息的问题：天气、新闻、股价、汇率</li>
+        <li>需要精确计算或多工具组合的任务</li>
+        <li>答案依赖环境反馈的开放型问题</li>
+      </ul>
+    </div>
+    <div class="kv bad">
+      <h5>✗ 局限性</h5>
+      <ul>
+        <li>纯推理问题用不上工具，白付循环成本</li>
+        <li>每轮携带全部历史，长任务 token 消耗大</li>
+        <li>工具选错会连环放大，缺乏自愈机制（见第九章）</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>2.4 典型示例问题</h3>
+  <ul class="examples">
+    <li><span class="no">Q1</span>
+      <div><span class="q">今天北京的气温是多少？适合户外跑步吗？</span>
+      <span class="a">Thought：需要实时天气 → Action：调用天气查询 → Observation：28℃、空气良 → Thought：对照跑步适宜条件 → 输出"适合，注意补水"。</span></div>
+    </li>
+    <li><span class="no">Q2</span>
+      <div><span class="q">搜索"量子计算"的定义，并解释它和传统计算的区别。</span>
+      <span class="a">Action：搜索工具取回定义 → Observation 后提炼"叠加态、并行计算"要点 → 组织对比解释输出。</span></div>
+    </li>
+    <li><span class="no">Q3</span>
+      <div><span class="q">查找最近的科技新闻，并总结三条最重要的动态。</span>
+      <span class="a">Action：新闻搜索工具 → Observation 返回多条 → Thought：逐条评估重要性 → 汇总三条摘要。</span></div>
+    </li>
+  </ul>
+</section>
+
+<!-- ============ 第三章 纯思维类 ============ -->
+<section class="chapter" id="ch3">
+  <header class="ch-head">
+    <p class="ch-no">第三章</p>
+    <h2 class="ch-title">纯思维推理范式<span class="ch-en">Pure-Thinking Paradigms</span></h2>
+    <p class="ch-lead">纯思维类范式不调用外部工具，全部推理在模型内部完成。它们不改变模型的能力，而是改变"思考的组织形式"--链、树、分解--以此撬动复杂问题的解答质量。本章讲三种基础形态，另外三种增强形态（投票、验证、组网）见第六章。</p>
+  </header>
+
+  <article class="para">
+    <h4 class="para-title">3.1　CoT 思维链<span class="para-en">Chain of Thought</span><span class="badge badge-demo">本项目可演示</span></h4>
+    <p class="para-tagline">"把思考过程写出来，答案自然更准。"</p>
+    <p>CoT 让模型<strong>显式生成中间推理步骤、再给结论</strong>：一步到位靠"直觉"，在复杂问题上容易翻车；分步推理把大问题拆成模型能稳定把握的小步，每一步都很简单，串联起来就能解难题。CoT 是所有推理范式的起点--ToT 改变链的形状（变树），Self-Ask 改变链的构造方式（自问分解），其余范式都以它为底座。</p>
+    <div class="flow">
+      <div class="flow-node start">问题输入</div>
+      <div class="flow-arrow"></div>
+      <div class="flow-node process"><b>分解</b><small>识别需要哪些中间步骤</small></div>
+      <div class="flow-arrow"></div>
+      <div class="flow-node llm"><b>逐步推理</b><small>每一步显式写出推理过程</small></div>
+      <div class="flow-arrow"></div>
+      <div class="flow-node end">最终答案</div>
+    </div>
+    <p class="fig-caption">图 3-1　CoT 标准执行流程</p>
+    <div class="kv-grid">
+      <div class="kv good">
+        <h5>✓ 适用场景</h5>
+        <ul>
+          <li>数学计算与证明、逻辑推理</li>
+          <li>多步计算、需要中间过程的问题</li>
+          <li>需要展示推理过程的教学讲解</li>
+        </ul>
+      </div>
+      <div class="kv bad">
+        <h5>✗ 局限性</h5>
+        <ul>
+          <li>线形单路径，一步错则步步错</li>
+          <li>无法获取外部信息，知识盲区直接幻觉</li>
+          <li>需要探索多个方案时力不从心（→ ToT）</li>
+        </ul>
+      </div>
+    </div>
+    <ul class="examples">
+      <li><span class="no">Q1</span>
+        <div><span class="q">鸡兔同笼：35 个头、94 只脚，鸡兔各几只？</span>
+        <span class="a">假设全是鸡得 70 只脚 -> 差 24 只脚 -> 每换一兔多 2 脚 -> 兔 12、鸡 23，逐步列式呈现。</span></div>
+      </li>
+      <li><span class="no">Q2</span>
+        <div><span class="q">如果今天是周三，100 天后是星期几？</span>
+        <span class="a">100 ÷ 7 = 14 余 2 -> 周三顺推 2 天 -> 周五。</span></div>
+      </li>
+      <li><span class="no">Q3</span>
+        <div><span class="q">三段论：所有人都会死，苏格拉底是人，所以？</span>
+        <span class="a">大前提（所有人会死）+ 小前提（苏格拉底是人）-> 逐步推出"苏格拉底会死"。</span></div>
+      </li>
+    </ul>
+  </article>
+
+  <article class="para">
+    <h4 class="para-title">3.2　ToT 思维树<span class="para-en">Tree of Thoughts</span><span class="badge badge-demo">本项目可演示</span></h4>
+    <p class="para-tagline">"多思考几条路，选最好的走。"</p>
+    <p>ToT 在每个推理节点<strong>生成 k 个候选分支</strong>，用模型（或外部评估器）为分支打分：保留高分分支继续展开、剪掉低分分支，最终从存活路径中回溯选出最优解。它把 CoT 的"单链"扩展成"一棵会修剪的树"，本质是在推理过程中做<strong>带剪枝的搜索</strong>（DFS / BFS）--思考不再是走到哪算哪，而是"探索-评估-取舍"。</p>
+    <div class="flow">
+      <div class="flow-node start">问题输入</div>
+      <div class="flow-arrow"></div>
+      <div class="flow-node llm"><b>生成 k 个候选分支</b><small>每步探索多条思路</small></div>
+      <div class="flow-arrow"></div>
+      <div class="flow-node decision"><b>评估打分</b></div>
+      <div class="flow-branch">
+        <div class="flow-col">
+          <div class="flow-arrow"><span class="alabel">高分 · 保留 ↺ 逐层展开</span></div>
+          <div class="flow-node"><b>继续深入</b><small>生成下一层分支</small></div>
+        </div>
+        <div class="flow-col">
+          <div class="flow-arrow"><span class="alabel">低分 · 剪枝</span></div>
+          <div class="flow-node"><b>放弃该路径</b><small>不再消耗算力</small></div>
+        </div>
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-node process"><b>回溯选最优路径</b></div>
+      <div class="flow-arrow"></div>
+      <div class="flow-node end">最终答案</div>
+    </div>
+    <p class="fig-caption">图 3-2　ToT 标准执行流程：分支展开-评估剪枝-回溯取优</p>
+    <div class="kv-grid">
+      <div class="kv good">
+        <h5>✓ 适用场景</h5>
+        <ul>
+          <li>有明确评价标准的探索题：算 24 点、数独、8 皇后</li>
+          <li>多方案权衡决策：出行计划、投资选择</li>
+          <li>需要保留多个备选方案的规划问题</li>
+        </ul>
+      </div>
+      <div class="kv bad">
+        <h5>✗ 局限性</h5>
+        <ul>
+          <li>token 成本成倍增长（每步 k 个候选）</li>
+          <li>分支打分依赖可评估标准，纯主观问题难用</li>
+          <li>实现复杂度比 CoT 高一个量级</li>
+        </ul>
+      </div>
+    </div>
+    <ul class="examples">
+      <li><span class="no">Q1</span>
+        <div><span class="q">用 1、3、4、6 通过加减乘除算出 24？请探索多种解法。</span>
+        <span class="a">枚举运算组合为分支 -> 评估每支可解性 -> 剪掉死路 -> 锁定 6 ÷ (1 − 3 ÷ 4) = 24。</span></div>
+      </li>
+      <li><span class="no">Q2</span>
+        <div><span class="q">周末出游，考虑天气、交通、预算、兴趣四个因素，选最优方案。</span>
+        <span class="a">每个维度生成候选方案 -> 四维打分 -> 剪掉低分组合 -> 输出综合最优的出行安排。</span></div>
+      </li>
+      <li><span class="no">Q3</span>
+        <div><span class="q">10 万元闲钱，分析股票、基金、定期存款三种方案的优劣。</span>
+        <span class="a">三分支分别推演收益与风险 -> 逐支评估 -> 给出兼顾风险偏好的组合建议。</span></div>
+      </li>
+    </ul>
+  </article>
+
+  <article class="para">
+    <h4 class="para-title">3.3　Self-Ask 自问自答<span class="para-en">Self-Ask</span><span class="badge badge-demo">本项目可演示</span></h4>
+    <p class="para-tagline">"把大问题拆成一串小问题，逐个击破。"</p>
+    <p>模型先对原问题自问："要回答它，我得先知道什么？"由此生成分解出的<strong>子问题队列</strong>；然后逐个回答（纯思维版靠模型内部知识，增强版可在每问处插入工具调用），每个子答案回填上下文、支撑下一问；最后综合全部子答案得出结论。它把"一步到位的多跳推理"变成<strong>显式的问答链</strong>，特别擅长 multi-hop（多跳）问题。</p>
+    <div class="flow">
+      <div class="flow-node start">复杂问题</div>
+      <div class="flow-arrow"></div>
+      <div class="flow-node llm"><b>自问：需要先回答哪些子问题？</b></div>
+      <div class="flow-arrow"></div>
+      <div class="flow-node process"><b>逐个回答子问题</b><small>子问题 1 → 子问题 2 → …… 答案逐个回填</small></div>
+      <div class="flow-arrow"></div>
+      <div class="flow-node end">综合得出最终答案</div>
+    </div>
+    <p class="fig-caption">图 3-3　Self-Ask 标准执行流程</p>
+    <div class="kv-grid">
+      <div class="kv good">
+        <h5>✓ 适用场景</h5>
+        <ul>
+          <li>多跳事实问题："蒙娜丽莎的画家还画过什么？"</li>
+          <li>需要组合多个知识片段的查询</li>
+          <li>子问题链式依赖的推理任务</li>
+        </ul>
+      </div>
+      <div class="kv bad">
+        <h5>✗ 局限性</h5>
+        <ul>
+          <li>分解方向错了，全链皆错（上限取决于拆解质量）</li>
+          <li>子问题串行，错误会沿链传导</li>
+          <li>需要实时信息的场景不如 ReAct</li>
+        </ul>
+      </div>
+    </div>
+    <ul class="examples">
+      <li><span class="no">Q1</span>
+        <div><span class="q">蒙娜丽莎的画家还画过什么著名作品？</span>
+        <span class="a">子问 1：作者是达芬奇 -> 子问 2：达芬奇的名作有哪些 -> 综合列出《最后的晚餐》等。</span></div>
+      </li>
+      <li><span class="no">Q2</span>
+        <div><span class="q">深圳和广州哪个城市人口更多？GDP 各是多少？</span>
+        <span class="a">子问 1：深圳人口与 GDP -> 子问 2：广州人口与 GDP -> 逐项比较得结论。</span></div>
+      </li>
+      <li><span class="no">Q3</span>
+        <div><span class="q">长江流经哪些省份？最终注入哪个海？</span>
+        <span class="a">子问 1：流经省份列表 -> 子问 2：入海口位置 -> 汇总回答。</span></div>
+      </li>
+    </ul>
+  </article>
+</section>
+
+<!-- ============ 第四章 规划执行类 ============ -->
+<section class="chapter" id="ch4">
+  <header class="ch-head">
+    <p class="ch-no">第四章</p>
+    <h2 class="ch-title">规划执行类范式<span class="ch-en">Plan-and-Execute</span></h2>
+    <p class="ch-lead">关键词是"先想清楚，再动手"：先把任务展开成一份结构化计划，再逐步执行，执行偏差还能触发重规划。与 ReAct"走一步看一步"相对，Plan-and-Execute 更像"先画路线图再出发"。<span class="badge badge-demo">本项目可演示</span></p>
+  </header>
+
+  <h3>4.1 范式核心解释</h3>
+  <p>Plan-and-Execute 由三个角色分工协作：</p>
+  <ul>
+    <li><strong>Planner（规划器）</strong>：把任务分解为有序的步骤列表，每步目标明确、可独立执行；</li>
+    <li><strong>Executor（执行器）</strong>：按序执行每一步（可调用工具），并汇报结果；</li>
+    <li><strong>Replanner（重规划）</strong>：执行中发现计划走不通（某步失败、信息变化）时，调整剩余步骤。</li>
+  </ul>
+  <p>它适合步骤多、周期长的任务：计划显式化让长任务不"漂移"，过程可检查、可暂停恢复。对比 ReAct 每轮都从头思考整体方向，P&amp;E 一次规划、按图执行--更稳定，但应变较慢。</p>
+
+  <h3>4.2 标准执行流程</h3>
+  <div class="flow">
+    <div class="flow-node start">任务输入</div>
+    <div class="flow-arrow"></div>
+    <div class="flow-node llm"><b>Planner</b><small>生成分步计划（结构化步骤列表）</small></div>
+    <div class="flow-arrow"></div>
+    <div class="flow-node tool"><b>Executor</b><small>按序执行每步 · 可调用工具 · 汇报结果</small></div>
+    <div class="flow-arrow"></div>
+    <div class="flow-node decision"><b>计划完成且达标？</b></div>
+    <div class="flow-branch">
+      <div class="flow-col">
+        <div class="flow-arrow"><span class="alabel">是</span></div>
+        <div class="flow-node end">汇总最终结果</div>
+      </div>
+      <div class="flow-col">
+        <div class="flow-arrow"><span class="alabel">否 · 触发重规划 ↺</span></div>
+        <div class="flow-node llm"><b>Replanner</b><small>调整剩余步骤后继续执行</small></div>
+      </div>
+    </div>
+  </div>
+  <p class="fig-caption">图 4-1　Plan-and-Execute 标准执行流程</p>
+
+  <h3>4.3 适用场景与局限性</h3>
+  <div class="kv-grid">
+    <div class="kv good">
+      <h5>✓ 适用场景</h5>
+      <ul>
+        <li>多步骤任务：旅行计划、行业分析报告</li>
+        <li>长程任务需要稳定执行（计划显式化，可检查、可恢复）</li>
+        <li>环境会变化、计划需动态调整的场景</li>
+      </ul>
+    </div>
+    <div class="kv bad">
+      <h5>✗ 局限性</h5>
+      <ul>
+        <li>规划质量是天花板：计划错了，执行再好也白费</li>
+        <li>简单任务"先规划"反而增加延迟与成本</li>
+        <li>重规划逻辑实现复杂</li>
+      </ul>
+    </div>
+  </div>
+  <div class="note">与 ReAct 的取舍：ReAct 每轮重新思考整体（灵活，但长任务易漂移）；P&amp;E 一次规划多次执行（稳定，但应变慢）。生产中常组合使用--用 P&amp;E 定骨架，每个步骤内部嵌 ReAct 执行。</div>
+
+  <h3>4.4 典型示例问题</h3>
+  <ul class="examples">
+    <li><span class="no">Q1</span>
+      <div><span class="q">帮我制定一个为期 3 天的北京旅游计划。</span>
+      <span class="a">Planner：拆出景点选择 / 路线编排 / 餐饮 / 预算四步 -> Executor 逐步确认信息 -> 汇总成行程表。</span></div>
+    </li>
+    <li><span class="no">Q2</span>
+      <div><span class="q">分析电动汽车行业的投资前景，从市场规模、政策支持、竞争格局三方面入手。</span>
+      <span class="a">计划三步走 -> 每步检索数据并分析 -> 某步数据缺失时重规划补充 -> 汇总结论。</span></div>
+    </li>
+    <li><span class="no">Q3</span>
+      <div><span class="q">规划健康减脂方案：每周运动 3 次，控制饮食，持续 2 个月。</span>
+      <span class="a">规划运动 / 饮食 / 复盘三模块 -> 逐周执行 -> 按体重变化数据触发重规划。</span></div>
+    </li>
+  </ul>
+</section>
+
+<!-- ============ 第五章 反馈迭代类 ============ -->
+<section class="chapter" id="ch5">
+  <header class="ch-head">
+    <p class="ch-no">第五章</p>
+    <h2 class="ch-title">反馈迭代类范式<span class="ch-en">Reflexion</span></h2>
+    <p class="ch-lead">引入"评估"环节：答案不是一次生成，而是"生成-评估-反思-改进"多轮打磨。Reflexion 相当于给智能体装上一本"错题本"。<span class="badge badge-demo">本项目可演示</span></p>
+  </header>
+
+  <h3>5.1 范式核心解释</h3>
+  <p>Reflexion 由三个角色循环协作：</p>
+  <ul>
+    <li><strong>Generator（生成器）</strong>：产出当前版本的答案；</li>
+    <li><strong>Evaluator（评估器）</strong>：按标准打分并给出具体反馈（规则校验，或 LLM-as-judge）；</li>
+    <li><strong>Reflector（反思器）</strong>：把反馈提炼成"反思记忆"--哪里错、为什么错、下次怎么改--注入下一轮生成的上下文。</li>
+  </ul>
+  <p>循环直到评估通过或耗尽最大轮次。核心思想：<strong>用语言化的自我反馈代替参数更新</strong>，让模型"在同一个会话里越做越好"。</p>
+
+  <h3>5.2 标准执行流程</h3>
+  <div class="flow">
+    <div class="flow-node start">任务输入</div>
+    <div class="flow-arrow"></div>
+    <div class="flow-node llm"><b>Generator</b><small>生成当前版本答案</small></div>
+    <div class="flow-arrow"></div>
+    <div class="flow-node decision"><b>Evaluator</b><small>评估打分 + 具体反馈</small></div>
+    <div class="flow-branch">
+      <div class="flow-col">
+        <div class="flow-arrow"><span class="alabel">通过</span></div>
+        <div class="flow-node end">输出最终答案</div>
+      </div>
+      <div class="flow-col">
+        <div class="flow-arrow"><span class="alabel">未通过</span></div>
+        <div class="flow-node process"><b>Reflector</b><small>生成反思记忆：错在哪、怎么改</small></div>
+        <div class="flow-arrow"><span class="alabel">带着反思进入下一轮 ↺</span></div>
+        <div class="flow-node llm"><b>回到 Generator</b><small>改进版答案</small></div>
+      </div>
+    </div>
+  </div>
+  <p class="fig-caption">图 5-1　Reflexion 标准执行流程：生成-评估-反思闭环</p>
+
+  <h3>5.3 适用场景与局限性</h3>
+  <div class="kv-grid">
+    <div class="kv good">
+      <h5>✓ 适用场景</h5>
+      <ul>
+        <li>有明确质量标准的生成任务：代码跑测试、文案评分</li>
+        <li>需要多轮打磨的推理与证明</li>
+        <li>对"一次到位"要求高的交付物</li>
+      </ul>
+    </div>
+    <div class="kv bad">
+      <h5>✗ 局限性</h5>
+      <ul>
+        <li>多轮循环，token 成本数倍增长</li>
+        <li>评估器不准会把迭代带偏（裁判很关键）</li>
+        <li>一次性事实查询毫无必要</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>5.4 典型示例问题</h3>
+  <ul class="examples">
+    <li><span class="no">Q1</span>
+      <div><span class="q">用 Python 写一个二分查找算法，然后优化时间和空间复杂度。</span>
+      <span class="a">生成初版 -> 评估边界条件（off-by-one）-> 反思修复 -> 迭代至测试通过。</span></div>
+    </li>
+    <li><span class="no">Q2</span>
+      <div><span class="q">为一款智能手表撰写产品宣传文案，要求不断迭代优化。</span>
+      <span class="a">生成初稿 -> 按"卖点清晰 / 节奏 / 记忆点"评分反馈 -> 反思改写 -> 多轮润色。</span></div>
+    </li>
+    <li><span class="no">Q3</span>
+      <div><span class="q">证明"任意两个奇数的平方差能被 8 整除"，请多轮审视推理过程。</span>
+      <span class="a">生成证明 -> 逐步检查推导 -> 发现未覆盖的情形 -> 反思补全后定稿。</span></div>
+    </li>
+  </ul>
+</section>
+
+<!-- ============ 第六章 补充范式 ============ -->
+<section class="chapter" id="ch6">
+  <header class="ch-head">
+    <p class="ch-no">第六章</p>
+    <h2 class="ch-title">其他补充推理范式<span class="ch-en">Self-Consistency · CoV · GoT</span></h2>
+    <p class="ch-lead">三大类之外，还有三种重要的"增强件"范式：它们通常不单独使用，而是套在其他范式外面进一步提升可靠性--Self-Consistency 靠"多次采样投票"，CoV 靠"生成后再验证"，GoT 靠"思维自由组网"。</p>
+  </header>
+
+  <article class="para">
+    <h4 class="para-title">6.1　Self-Consistency 自一致性<span class="para-en">Self-Consistency</span></h4>
+    <p class="para-tagline">"问 N 遍，少数服从多数。"</p>
+    <p>对同一问题用较高温度<strong>采样 N 条推理路径</strong>（每条都是一条 CoT），提取各自的最终答案后<strong>投票取多数派</strong>。用"众数"对冲单次推理的随机误差。实现极简（CoT + 采样 + 投票），是性价比最高的可靠性增强手段。</p>
+    <div class="flow">
+      <div class="flow-node start">问题输入</div>
+      <div class="flow-arrow"></div>
+      <div class="flow-branch">
+        <div class="flow-col">
+          <div class="flow-arrow"><span class="alabel">采样 1</span></div>
+          <div class="flow-node small llm">推理路径 1 -> 答案 A</div>
+        </div>
+        <div class="flow-col">
+          <div class="flow-arrow"><span class="alabel">采样 2</span></div>
+          <div class="flow-node small llm">推理路径 2 -> 答案 A</div>
+        </div>
+        <div class="flow-col">
+          <div class="flow-arrow"><span class="alabel">采样 N</span></div>
+          <div class="flow-node small llm">推理路径 N -> 答案 B</div>
+        </div>
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-node decision"><b>多数投票</b></div>
+      <div class="flow-arrow"></div>
+      <div class="flow-node end">胜出答案（A）</div>
+    </div>
+    <p class="fig-caption">图 6-1　Self-Consistency 标准执行流程：多路采样-投票</p>
+    <div class="kv-grid">
+      <div class="kv good">
+        <h5>✓ 适用场景</h5>
+        <ul>
+          <li>有唯一正确答案的数学、逻辑题</li>
+          <li>对准确率敏感、成本可接受的生产场景（可配小模型）</li>
+          <li>作为其他范式的"外挂"可靠性增强</li>
+        </ul>
+      </div>
+      <div class="kv bad">
+        <h5>✗ 局限性</h5>
+        <ul>
+          <li>只适用于答案可比较的问题（开放生成没法投票）</li>
+          <li>N 倍推理成本</li>
+          <li>对系统性错误无效：全错时投票还是错</li>
+        </ul>
+      </div>
+    </div>
+    <ul class="examples">
+      <li><span class="no">Q1</span>
+        <div><span class="q">一道复杂数学应用题，多次采样答案不一致时怎么处理？</span>
+        <span class="a">并行采样 5 条推理路径 -> 提取各路径答案 -> 取众数（3/5 票的值）输出。</span></div>
+      </li>
+      <li><span class="no">Q2</span>
+        <div><span class="q">生成代码实现方案，希望降低随机翻车率。</span>
+        <span class="a">多路采样实现策略 -> 对可运行性投票 -> 多数派策略作为最终方案落地。</span></div>
+      </li>
+      <li><span class="no">Q3</span>
+        <div><span class="q">对一个数值估算问题给出稳健估计。</span>
+        <span class="a">多次独立估算 -> 取中位数 / 众数，剔除离群值影响。</span></div>
+      </li>
+    </ul>
+  </article>
+
+  <article class="para">
+    <h4 class="para-title">6.2　CoV 验证链<span class="para-en">Chain of Verification</span></h4>
+    <p class="para-tagline">"先回答，再自己出题考自己。"</p>
+    <p>四步流程：<strong>Draft</strong>（生成初始答案）-> <strong>Verify</strong>（针对答案中每个事实点自动生成验证问题，如"支撑这个结论的数据是哪一年的？"）-> <strong>Answer</strong>（<em>独立</em>回答验证问题，不带原答案上下文，避免自我偏袒）-> <strong>Revise</strong>（比对验证答案与原答案，修正不一致处）。专治 LLM"一本正经地胡说八道"。</p>
+    <div class="flow">
+      <div class="flow-node start">问题输入</div>
+      <div class="flow-arrow"></div>
+      <div class="flow-node llm"><b>Draft</b><small>生成初始答案</small></div>
+      <div class="flow-arrow"></div>
+      <div class="flow-node process"><b>Verify</b><small>针对每个事实点生成验证问题</small></div>
+      <div class="flow-arrow"></div>
+      <div class="flow-node llm"><b>独立回答验证问题</b><small>不携带原答案，避免自我偏袒</small></div>
+      <div class="flow-arrow"></div>
+      <div class="flow-node decision"><b>发现矛盾？</b></div>
+      <div class="flow-branch">
+        <div class="flow-col">
+          <div class="flow-arrow"><span class="alabel">是 · Revise</span></div>
+          <div class="flow-node process"><b>修正答案</b><small>替换不一致的事实点</small></div>
+        </div>
+        <div class="flow-col">
+          <div class="flow-arrow"><span class="alabel">否</span></div>
+          <div class="flow-node process"><b>维持原答案</b></div>
+        </div>
+      </div>
+      <div class="flow-arrow"></div>
+      <div class="flow-node end">最终答案</div>
+    </div>
+    <p class="fig-caption">图 6-2　CoV 标准执行流程：生成-验证-修正</p>
+    <div class="kv-grid">
+      <div class="kv good">
+        <h5>✓ 适用场景</h5>
+        <ul>
+          <li>事实密集型任务：摘要、知识问答、数据引用</li>
+          <li>幻觉风险高、要求可信输出的场景</li>
+          <li>与 RAG 配合，核验检索内容的事实一致性</li>
+        </ul>
+      </div>
+      <div class="kv bad">
+        <h5>✗ 局限性</h5>
+        <ul>
+          <li>验证轮增加延迟与成本</li>
+          <li>验证问题仍依赖模型自身知识（盲区照样验不出）</li>
+          <li>开放性、主观性问题不适用</li>
+        </ul>
+      </div>
+    </div>
+    <ul class="examples">
+      <li><span class="no">Q1</span>
+        <div><span class="q">把这篇新闻稿压缩成三句话摘要。</span>
+        <span class="a">生成摘要 -> 对摘要中的时间、人物、数字逐项生成验证问题 -> 独立核对 -> 修正偏差。</span></div>
+      </li>
+      <li><span class="no">Q2</span>
+        <div><span class="q">第二次工业革命的关键发明有哪些？各是什么年代？</span>
+        <span class="a">初答列出发明与年代 -> 逐项生成验证问题 -> 交叉核对史实 -> 修正错置的年代。</span></div>
+      </li>
+      <li><span class="no">Q3</span>
+        <div><span class="q">生成一份产品参数对比表，要求引用数据可靠。</span>
+        <span class="a">生成对比表 -> 每个参数生成"来源与数值"验证问题 -> 独立求证 -> 替换不可靠数据。</span></div>
+      </li>
+    </ul>
+  </article>
+
+  <article class="para">
+    <h4 class="para-title">6.3　GoT 思维图<span class="para-en">Graph of Thoughts</span></h4>
+    <p class="para-tagline">"思维不必是链或树，可以是网。"</p>
+    <p>把思维单元表示为<strong>图的节点</strong>，支持任意拓扑：<strong>聚合</strong>（Aggregation，多条推理分支合并成一条）、<strong>精炼</strong>（Refinement，对某节点反复改进）、<strong>回溯</strong>。相比 ToT 的树结构，GoT 允许"多路思路汇成一路"与"循环改进"——链和树都是图的特例，GoT 是推理结构的最通用形态。</p>
+    <div class="flow">
+      <div class="flow-node start">问题输入</div>
+      <div class="flow-arrow"></div>
+      <div class="flow-branch">
+        <div class="flow-col">
+          <div class="flow-arrow"><span class="alabel">视角 A</span></div>
+          <div class="flow-node small llm">推理分支 A</div>
+        </div>
+        <div class="flow-col">
+          <div class="flow-arrow"><span class="alabel">视角 B</span></div>
+          <div class="flow-node small llm">推理分支 B</div>
+        </div>
+        <div class="flow-col">
+          <div class="flow-arrow"><span class="alabel">视角 C</span></div>
+          <div class="flow-node small llm">推理分支 C</div>
+        </div>
+      </div>
+      <div class="flow-arrow"><span class="alabel">聚合 Aggregation</span></div>
+      <div class="flow-node process"><b>合并多路结论</b></div>
+      <div class="flow-arrow"><span class="alabel">精炼 Refinement ↺</span></div>
+      <div class="flow-node llm"><b>迭代改进</b><small>对合并结果反复打磨</small></div>
+      <div class="flow-arrow"></div>
+      <div class="flow-node end">最终答案</div>
+    </div>
+    <p class="fig-caption">图 6-3　GoT 标准执行流程：多路推理-聚合-精炼</p>
+    <div class="kv-grid">
+      <div class="kv good">
+        <h5>✓ 适用场景</h5>
+        <ul>
+          <li>整合多方视角的复杂任务：多信息源调研报告</li>
+          <li>子任务间存在依赖交错的规划</li>
+          <li>ToT 表达不了的"汇流 + 迭代改进"结构</li>
+        </ul>
+      </div>
+      <div class="kv bad">
+        <h5>✗ 局限性</h5>
+        <ul>
+          <li>工程实现最复杂（图的调度与内存管理）</li>
+          <li>token 成本最高</li>
+          <li>教学与调试门槛高，多数业务用 ToT 已足够</li>
+        </ul>
+      </div>
+    </div>
+    <ul class="examples">
+      <li><span class="no">Q1</span>
+        <div><span class="q">综合三个信息源，写一份市场调研报告。</span>
+        <span class="a">分头推理三源要点 -> 聚合去重 -> 多轮精炼结构与论据 -> 成稿。</span></div>
+      </li>
+      <li><span class="no">Q2</span>
+        <div><span class="q">为一个跨部门项目制定计划，各子任务互相有依赖。</span>
+        <span class="a">按部门分支推理 -> 聚合对齐依赖关系 -> 迭代调整排期 -> 输出整体计划。</span></div>
+      </li>
+      <li><span class="no">Q3</span>
+        <div><span class="q">创作一篇多章节长文，各章思路需要互相呼应。</span>
+        <span class="a">各章独立构思 -> 聚合统一主线 -> 逐章精炼并回填交叉引用。</span></div>
+      </li>
+    </ul>
+  </article>
+</section>
+
+<!-- ============ 第七章 编排方式 ============ -->
+<section class="chapter" id="ch7">
+  <header class="ch-head">
+    <p class="ch-no">第七章</p>
+    <h2 class="ch-title">智能体任务流编排方式<span class="ch-en">Orchestration Patterns</span></h2>
+    <p class="ch-lead">推理范式解决"单个智能体怎么想"，编排解决"多个步骤 / 智能体怎么组织"。顺序、判断、循环、并行、状态机是五种控制流原语--再复杂的智能体工作流，也是它们的嵌套组合。</p>
+  </header>
+
+  <div class="grid-2">
+
+    <article class="orch-card">
+      <h4>顺序编排</h4>
+      <p class="en">Sequence</p>
+      <div class="flow mini pipeline">
+        <div class="flow-node small start">步骤 A</div>
+        <div class="flow-arrow"></div>
+        <div class="flow-node small">步骤 B</div>
+        <div class="flow-arrow"></div>
+        <div class="flow-node small end">步骤 C</div>
+      </div>
+      <p><strong>核心逻辑</strong>：步骤按固定次序逐一执行，上游输出作为下游输入，像工厂流水线。最简单也最常用，是一切编排的默认形态。</p>
+      <p class="fit"><strong>适配范式</strong>：<span class="chip chip-blue">CoT</span><span class="chip chip-blue">Plan-and-Execute</span><span class="chip chip-blue">流水线组合架构</span></p>
+      <p class="fit"><strong>适用场景</strong>：步骤间强依赖且顺序稳定的任务--翻译-&gt;润色-&gt;排版；提取-&gt;分析-&gt;成文。</p>
+    </article>
+
+    <article class="orch-card">
+      <h4>判断编排</h4>
+      <p class="en">Branch / Switch</p>
+      <div class="flow mini">
+        <div class="flow-node small start">输入</div>
+        <div class="flow-arrow"></div>
+        <div class="flow-node small decision">条件判断</div>
+        <div class="flow-branch">
+          <div class="flow-col">
+            <div class="flow-arrow"><span class="alabel">条件 A</span></div>
+            <div class="flow-node small">分支 A</div>
+          </div>
+          <div class="flow-col">
+            <div class="flow-arrow"><span class="alabel">条件 B</span></div>
+            <div class="flow-node small">分支 B</div>
+          </div>
+        </div>
+      </div>
+      <p><strong>核心逻辑</strong>：在关键节点按条件路由到不同分支（if/else 或意图分类），每个分支可挂不同的范式、模型甚至人工流程。</p>
+      <p class="fit"><strong>适配范式</strong>：<span class="chip chip-purple">元智能体调度的底层机制</span><span class="chip chip-blue">意图识别分流</span></p>
+      <p class="fit"><strong>适用场景</strong>：输入差异大、处理路径不同的任务--工单分级路由；简单问题走 CoT、复杂问题走 ReAct。</p>
+    </article>
+
+    <article class="orch-card">
+      <h4>循环编排</h4>
+      <p class="en">Loop</p>
+      <div class="flow mini">
+        <div class="flow-node small start">执行子流程</div>
+        <div class="flow-arrow"></div>
+        <div class="flow-node small decision">达标？</div>
+        <div class="flow-branch">
+          <div class="flow-col">
+            <div class="flow-arrow"><span class="alabel">是</span></div>
+            <div class="flow-node small end">完成</div>
+          </div>
+          <div class="flow-col">
+            <div class="flow-arrow"><span class="alabel">否 ↺ 重复执行</span></div>
+            <div class="flow-node small">回到执行</div>
+          </div>
+        </div>
+      </div>
+      <p><strong>核心逻辑</strong>：重复执行一段子流程，直到满足退出条件（达标 / 次数上限），是反馈迭代类范式的控制流基础。</p>
+      <p class="fit"><strong>适配范式</strong>：<span class="chip chip-blue">Reflexion</span><span class="chip chip-blue">ReAct Agent Loop</span><span class="chip chip-blue">Self-Consistency 采样</span></p>
+      <p class="fit"><strong>适用场景</strong>："生成-评估-改进"类任务；需要轮询等待外部状态的任务。</p>
+    </article>
+
+    <article class="orch-card">
+      <h4>并行编排</h4>
+      <p class="en">Parallel</p>
+      <div class="flow mini">
+        <div class="flow-node small start">任务拆分</div>
+        <div class="flow-branch">
+          <div class="flow-col">
+            <div class="flow-arrow"></div>
+            <div class="flow-node small">子任务 1</div>
+          </div>
+          <div class="flow-col">
+            <div class="flow-arrow"></div>
+            <div class="flow-node small">子任务 2</div>
+          </div>
+          <div class="flow-col">
+            <div class="flow-arrow"></div>
+            <div class="flow-node small">子任务 3</div>
+          </div>
+        </div>
+        <div class="flow-arrow"><span class="alabel">汇合 Join</span></div>
+        <div class="flow-node small end">合并结果</div>
+      </div>
+      <p><strong>核心逻辑</strong>：无依赖的子任务同时执行，全部完成后汇合（join）合并结果。缩短时延、提升吞吐。</p>
+      <p class="fit"><strong>适配范式</strong>：<span class="chip chip-blue">Self-Consistency</span><span class="chip chip-blue">ToT 分支展开</span><span class="chip chip-blue">GoT 并行推理</span></p>
+      <p class="fit"><strong>适用场景</strong>：子任务相互独立--多关键词同时搜索、多文档同时摘要、多语言同时翻译。</p>
+    </article>
+
+    <article class="orch-card span-2">
+      <h4>状态机编排</h4>
+      <p class="en">State Machine</p>
+      <div class="flow mini pipeline">
+        <div class="flow-node small start">状态：待处理</div>
+        <div class="flow-arrow"><span class="alabel">事件：受理</span></div>
+        <div class="flow-node small">状态：处理中</div>
+        <div class="flow-arrow"><span class="alabel">事件：解决</span></div>
+        <div class="flow-node small end">状态：已关闭</div>
+      </div>
+      <p><strong>核心逻辑</strong>：用有限状态机管理流程：每个状态绑定处理逻辑，事件 / 条件触发状态迁移（含跳转与回退），执行路径不预先固定--如"已关闭 --重新打开事件--&gt; 待处理"。</p>
+      <p class="fit"><strong>适配范式</strong>：<span class="chip chip-blue">长生命周期流程（审批、订单履约）</span><span class="chip chip-blue">多轮对话状态管理</span><span class="chip chip-purple">LangGraph 图编排</span></p>
+      <p class="fit"><strong>适用场景</strong>：流程复杂、异常分支多、有人工介入点的业务；需要持久化状态、断点续跑的任务。</p>
+    </article>
+
+  </div>
+
+  <div class="note">五种原语可以任意嵌套：并行里套循环（多路采样各跑迭代）、判断后接顺序（路由后走各自流水线）……第八章讲如何把它们与推理范式组合成完整架构。</div>
+</section>
+
+<!-- ============ 第八章 组合架构 ============ -->
+<section class="chapter" id="ch8">
+  <header class="ch-head">
+    <p class="ch-no">第八章</p>
+    <h2 class="ch-title">范式与编排的组合落地架构<span class="ch-en">Composition Architectures</span></h2>
+    <p class="ch-lead">真实系统从不只用一种范式。两条主流组合路径：<strong>流水线式</strong>（预先设计好阶段链，范式在固定位置就位）与<strong>元智能体式</strong>（一个"调度者"根据任务动态选范式、派子智能体）。</p>
+  </header>
+
+  <h3>8.1 流水线式静态组合</h3>
+  <p><strong>核心逻辑</strong>：把端到端任务切分为固定阶段，每个阶段选定最适配的范式与模型，阶段间以结构化产物（JSON / 文档）交接。设计期确定全部控制流，运行期只走既定路线。</p>
+  <p><strong>适用边界</strong>：任务结构稳定、可枚举（研报、工单类流程化产出），追求可预测、可审计、成本可控。不适用于路径高度动态的探索型任务。</p>
+
+  <h4>场景一：金融数据研报生成</h4>
+  <div class="flow pipeline">
+    <div class="flow-node start"><b>数据采集</b><small><span class="chip chip-blue">ReAct</span></small></div>
+    <div class="flow-arrow"></div>
+    <div class="flow-node"><b>指标计算</b><small><span class="chip chip-blue">CoT</span></small></div>
+    <div class="flow-arrow"></div>
+    <div class="flow-node"><b>多空分析</b><small><span class="chip chip-blue">ToT</span></small></div>
+    <div class="flow-arrow"></div>
+    <div class="flow-node"><b>初稿撰写</b><small><span class="chip chip-blue">CoT</span></small></div>
+    <div class="flow-arrow"></div>
+    <div class="flow-node"><b>质量审校</b><small><span class="chip chip-blue">Reflexion</span></small></div>
+    <div class="flow-arrow"></div>
+    <div class="flow-node end">研报定稿</div>
+  </div>
+  <p class="fig-caption">图 8-1　金融研报生成流水线：各阶段范式分工</p>
+  <p>采集阶段用 ReAct 联网多源取数；计算阶段用 CoT 保证指标推导可追溯；分析阶段用 ToT 并行推演多空两方观点再择优；审校阶段用 Reflexion 多轮核查数据引用与逻辑漏洞，不通过则打回修改。</p>
+
+  <h4>场景二：客户服务工单处理</h4>
+  <div class="flow">
+    <div class="flow-node start">工单接入</div>
+    <div class="flow-arrow"></div>
+    <div class="flow-node llm"><b>意图识别与分级</b><small><span class="chip chip-purple">判断编排</span></small></div>
+    <div class="flow-arrow"></div>
+    <div class="flow-node decision"><b>工单类型？</b></div>
+    <div class="flow-branch">
+      <div class="flow-col">
+        <div class="flow-arrow"><span class="alabel">简单咨询</span></div>
+        <div class="flow-node"><b>FAQ 直答</b><small><span class="chip chip-blue">CoT</span></small></div>
+      </div>
+      <div class="flow-col">
+        <div class="flow-arrow"><span class="alabel">复杂排查</span></div>
+        <div class="flow-node tool"><b>诊断排查</b><small><span class="chip chip-blue">ReAct</span></small></div>
+        <div class="flow-arrow"></div>
+        <div class="flow-node"><b>方案生成</b><small><span class="chip chip-blue">Plan-and-Execute</span></small></div>
+      </div>
+    </div>
+    <div class="flow-arrow"><span class="alabel">汇合</span></div>
+    <div class="flow-node process"><b>方案质检</b><small><span class="chip chip-blue">Reflexion</span></small></div>
+    <div class="flow-arrow"></div>
+    <div class="flow-node end">归档 + 知识沉淀</div>
+  </div>
+  <p class="fig-caption">图 8-2　客服工单处理流程：判断路由 + 分支差异化范式</p>
+  <p>先判断编排做意图分流：简单咨询用 CoT 低成本直答；复杂排查走"ReAct 查证 + P&amp;E 生成解决方案"的组合。汇合后统一过 Reflexion 质检，最后归档并把有效解决方案沉淀进知识库。</p>
+
+  <h3>8.2 元智能体动态调度架构</h3>
+  <p><strong>元智能体（Orchestrator / Meta-Agent）</strong>是位于系统顶层的"指挥官"智能体：它不直接干活，而负责任务理解与拆解、为子任务选择范式、创建 / 调用 / 回收子智能体、聚合结果并最终交付。</p>
+  <div class="flow">
+    <div class="flow-node start">用户任务</div>
+    <div class="flow-arrow"></div>
+    <div class="flow-node llm"><b>元智能体</b><small>理解任务 · 拆解子任务</small></div>
+    <div class="flow-arrow"></div>
+    <div class="flow-node decision"><b>为每个子任务选择范式与编排策略</b></div>
+    <div class="flow-branch">
+      <div class="flow-col">
+        <div class="flow-arrow"><span class="alabel">需查实时信息</span></div>
+        <div class="flow-node small tool">子智能体 · ReAct</div>
+      </div>
+      <div class="flow-col">
+        <div class="flow-arrow"><span class="alabel">多方案决策</span></div>
+        <div class="flow-node small llm">子智能体 · ToT</div>
+      </div>
+      <div class="flow-col">
+        <div class="flow-arrow"><span class="alabel">高质量交付</span></div>
+        <div class="flow-node small llm">子智能体 · Reflexion</div>
+      </div>
+    </div>
+    <div class="flow-arrow"><span class="alabel">汇合</span></div>
+    <div class="flow-node process"><b>结果聚合与整合</b></div>
+    <div class="flow-arrow"></div>
+    <div class="flow-node end">最终交付</div>
+  </div>
+  <p class="fig-caption">图 8-3　元智能体调度示意：按任务特征动态路由范式</p>
+
+  <h4>不同任务场景下的范式选择与编排策略</h4>
+  <div class="tbl-wrap">
+    <table class="data">
+      <thead>
+        <tr><th>任务特征</th><th>首选范式</th><th>编排方式</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>事实查询、需实时信息</td><td>ReAct</td><td>循环</td></tr>
+        <tr><td>多步规划、长程任务</td><td>Plan-and-Execute</td><td>顺序 + 循环</td></tr>
+        <tr><td>多方案权衡决策</td><td>ToT / GoT</td><td>并行 + 汇合</td></tr>
+        <tr><td>高准确率数学、逻辑</td><td>CoT + Self-Consistency</td><td>并行采样</td></tr>
+        <tr><td>高质量交付物</td><td>Reflexion（+ CoV）</td><td>循环迭代</td></tr>
+        <tr><td>多源信息整合</td><td>GoT / 并行检索</td><td>并行 + 聚合</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note">两条路线的取舍：流水线<strong>可预测、好运维、成本低</strong>，但僵化；元智能体<strong>灵活、上限高</strong>，但不可预测、成本高、调试难。生产实践常混合使用--主干用流水线保稳定，关键节点用元调度提灵活。</div>
+</section>
+
+<!-- ============ 第九章 生产差距 ============ -->
+<section class="chapter" id="ch9">
+  <header class="ch-head">
+    <p class="ch-no">第九章</p>
+    <h2 class="ch-title">离生产级 Harness 还缺什么<span class="ch-en">The Gap to Production</span></h2>
+    <p class="ch-lead">前八章的范式与编排足以搭出"能跑的 Demo"。但从 Demo 到生产，缺的不是更聪明的推理，而是工程化的 Harness--包裹在模型外面的运行时管控层。本章盘点七项关键缺失。</p>
+  </header>
+
+  <h3>9.1 前置认知：Harness 的核心定位与分层价值</h3>
+  <p><strong>Harness（运行时护栏与管控层）</strong>是包裹在智能体外面的运行时系统：调度执行、注入上下文、调用工具、管控边界、记录一切。类比：模型是"大脑"，Harness 是"神经系统 + 免疫系统"--大脑再聪明，没有神经系统和免疫系统也活不成。</p>
+  <div class="layers">
+    <div class="layer"><b>应用层</b><span>业务逻辑与用户交互</span></div>
+    <div class="layer hl"><b>Harness 层</b><span>安全护栏 · 容错自愈 · 上下文工程 · 可观测 · 成本管控</span></div>
+    <div class="layer"><b>编排层</b><span>工作流、状态管理与多智能体协作</span></div>
+    <div class="layer"><b>范式层</b><span>ReAct · ToT · Reflexion 等推理方法</span></div>
+    <div class="layer"><b>模型层</b><span>LLM 推理能力</span></div>
+  </div>
+  <p class="fig-caption">图 9-1　智能体系统分层：Harness 是 Demo 与生产的分水岭</p>
+  <p>范式与编排决定"能做多聪明的任务"，Harness 决定"能不能稳定地一直做"。Demo 通常只建上三层；生产五层缺一不可。</p>
+
+  <h3>9.2 七项关键缺失</h3>
+
+  <h4>缺失一：执行全链路安全护栏与边界管控</h4>
+  <p>工具调用白名单、参数校验、危险操作人工确认（human-in-the-loop）、输出内容过滤。Demo 常把权限整个交给模型；生产必须"最小权限 + 关键动作拦截"。</p>
+
+  <h4>缺失二：运行时容错与异常自愈</h4>
+  <p>超时重试、工具降级、循环熔断（最大轮次上限）、失败回滚与检查点恢复。Demo 一错就崩；生产要"错了能自己爬起来"。</p>
+
+  <h4>缺失三：全生命周期上下文工程</h4>
+  <p>上下文窗口是稀缺资源：历史压缩、记忆分层（短期 / 长期）、检索增强（RAG）注入、无关信息裁剪。Demo 全量塞入直到溢出；生产要精打细算每一个 token。</p>
+
+  <h4>缺失四：全链路可观测性与可调试性</h4>
+  <p>每一步的输入输出、工具调用、token 消耗、延迟全量埋点（tracing），支持回放调试与评测基线。Demo 靠 print；生产靠 trace。</p>
+
+  <h4>缺失五：资源与成本精细化管控</h4>
+  <p>预算限额、模型分级路由（简单任务用小模型）、缓存复用、并发控制。Demo 不计成本；生产按千次调用核算毛利。</p>
+
+  <h4>缺失六：多智能体协作与通信基础设施</h4>
+  <p>角色定义、消息协议、共享状态（黑板模式）、冲突消解、死锁防护。Demo 两个 agent 对话即可；生产需要一条可靠的协作总线。</p>
+
+  <h4>缺失七：环境适配与标准化接入层</h4>
+  <p>工具沙箱（文件、浏览器、代码执行）、MCP 等标准协议接入、开发 / 测试 / 生产环境隔离。Demo 工具硬编码；生产走标准化接入。</p>
+
+  <h3>9.3 智能体从 Demo 到生产的完整分层架构对照</h3>
+  <div class="tbl-wrap">
+    <table class="data">
+      <thead>
+        <tr><th>维度</th><th>Demo 级</th><th>生产级</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>控制流</td><td>范式内简单循环</td><td>编排引擎 + 状态持久化 + 断点恢复</td></tr>
+        <tr><td>工具</td><td>硬编码直调</td><td>白名单 + 沙箱 + 标准协议（MCP）</td></tr>
+        <tr><td>上下文</td><td>全量塞入</td><td>压缩、分层记忆、RAG 按需注入</td></tr>
+        <tr><td>错误处理</td><td>崩溃或裸重试</td><td>熔断、降级、检查点回滚</td></tr>
+        <tr><td>可观测</td><td>print 日志</td><td>全链路 trace + 评测基线</td></tr>
+        <tr><td>成本</td><td>不计</td><td>预算限额、模型路由、缓存</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>9.4 落地总结：三级成熟度台阶</h3>
+  <div class="steps">
+    <div class="step-card l1">
+      <p class="lv">LEVEL 1</p>
+      <h4>演示级</h4>
+      <p>跑通一种或几种范式，能回答预期内的问题。本手册配套案例库（frontend/）即处于此级--教学演示用途。</p>
+    </div>
+    <div class="step-card l2">
+      <p class="lv">LEVEL 2</p>
+      <h4>工程级</h4>
+      <p>编排多范式 / 多智能体，具备基本容错与观测能力，成本可估算。多数企业内部工具所处阶段。</p>
+    </div>
+    <div class="step-card l3">
+      <p class="lv">LEVEL 3</p>
+      <h4>生产级</h4>
+      <p>全套 Harness 护栏：可评测、可回滚、可持续运营，具备安全与成本边界。</p>
+    </div>
+  </div>
+  <p class="fig-caption">图 9-2　三级成熟度台阶：每上一级，工程投入都数量级增长</p>
+</section>
+
+<!-- ============ 第十章 选型总结 ============ -->
+<section class="chapter" id="ch10">
+  <header class="ch-head">
+    <p class="ch-no">第十章</p>
+    <h2 class="ch-title">选型指南与课程总结<span class="ch-en">Selection Guide &amp; Recap</span></h2>
+    <p class="ch-lead">把九章内容收进三张表（范式对比、场景选型、框架速览），再做一次知识点复盘--选型的顺序永远是：先看任务类型，再选范式，最后定编排。</p>
+  </header>
+
+  <h3>10.1 全量推理范式核心信息对比表</h3>
+  <div class="tbl-wrap">
+    <table class="data">
+      <thead>
+        <tr><th>范式</th><th>一句话机制</th><th>最适合</th><th>成本</th><th>组合建议</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>CoT</td><td>分步写出推理过程</td><td>数学、逻辑、多步计算</td><td>低（1×）</td><td>一切推理的底座</td></tr>
+        <tr><td>Self-Ask</td><td>拆子问题逐个击破</td><td>多跳知识问答</td><td>低</td><td>每问处可嵌工具调用</td></tr>
+        <tr><td>ToT</td><td>多分支生成-评估-剪枝</td><td>探索、决策、解谜</td><td>高（k×）</td><td>分支可并行展开</td></tr>
+        <tr><td>ReAct</td><td>想-做-看循环</td><td>需要工具的任务</td><td>中</td><td>工具型智能体默认选择</td></tr>
+        <tr><td>Plan-and-Execute</td><td>先规划后执行、可重规划</td><td>长程多步任务</td><td>中</td><td>步骤内常嵌 ReAct</td></tr>
+        <tr><td>Reflexion</td><td>评估-反思-改进闭环</td><td>质量打磨类交付</td><td>高（轮数×）</td><td>常配规则 / 测试做评估器</td></tr>
+        <tr><td>Self-Consistency</td><td>多路采样投票</td><td>有唯一答案的题</td><td>中高（N×）</td><td>套在 CoT 外即可</td></tr>
+        <tr><td>CoV</td><td>生成后自验证修正</td><td>事实密集型任务</td><td>中</td><td>适合与 RAG 配合</td></tr>
+        <tr><td>GoT</td><td>思维自由组网聚合</td><td>多源整合深加工</td><td>最高</td><td>多数业务用 ToT 已够</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>10.2 不同业务场景的范式 + 编排选型建议</h3>
+  <div class="tbl-wrap">
+    <table class="data">
+      <thead>
+        <tr><th>业务场景</th><th>推荐组合</th><th>理由</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>客服问答</td><td>判断编排 + 简单走 CoT / 复杂走 ReAct</td><td>分级路由，成本可控</td></tr>
+        <tr><td>数据分析助手</td><td>ReAct + CoT</td><td>工具查数 + 分步推算</td></tr>
+        <tr><td>内容创作平台</td><td>Plan-and-Execute + Reflexion</td><td>先列纲后成文，多轮润色</td></tr>
+        <tr><td>投研报告</td><td>流水线：ReAct 采集 + ToT 分析 + Reflexion 审校</td><td>阶段分工明确，可审计</td></tr>
+        <tr><td>代码助手</td><td>ReAct + Reflexion</td><td>读写工具 + 测试反馈迭代</td></tr>
+        <tr><td>多源情报整合</td><td>GoT / 并行检索 + CoV</td><td>多路聚合 + 事实核验</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>10.3 主流工程落地框架能力速览</h3>
+  <div class="tbl-wrap">
+    <table class="data">
+      <thead>
+        <tr><th>框架</th><th>定位</th><th>编排能力</th><th>生态特点</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>LangGraph</td><td>图 / 状态机编排引擎</td><td>状态图、持久化、human-in-the-loop</td><td>LangChain 系，社区最活跃</td></tr>
+        <tr><td>AutoGen（AG2）</td><td>多智能体对话框架</td><td>角色对话、内置代码执行环境</td><td>微软系，研究导向</td></tr>
+        <tr><td>CrewAI</td><td>角色团队协作框架</td><td>顺序 / 分层 Crew 编排</td><td>上手快，"团队"隐喻直观</td></tr>
+        <tr><td>Spring AI</td><td>Java 生态工程化框架</td><td>ChatClient + Advisor + MCP</td><td>JVM 生产栈友好（本项目所用）</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>10.4 课程核心知识点复盘</h3>
+  <ul>
+    <li><strong>三层分野</strong>：范式回答"怎么想"，编排回答"怎么组织"，Harness 回答"怎么管住"。</li>
+    <li><strong>两个最小</strong>：CoT 是最小可用推理，ReAct 是最小可用智能体。</li>
+    <li><strong>三大类范式</strong>：纯思维类（链、树、分解、投票、验证、组网）、规划执行类（边想边做、先想后做）、反馈迭代类（越改越好）。</li>
+    <li><strong>五种编排原语</strong>：顺序、判断、循环、并行、状态机--可任意嵌套组合。</li>
+    <li><strong>两条组合路线</strong>：流水线（稳、可控）与元智能体（活、上限高），生产常混用。</li>
+    <li><strong>Harness 七件套</strong>：安全护栏、容错自愈、上下文工程、可观测性、成本管控、协作基础设施、标准接入。</li>
+    <li><strong>选型心法</strong>：先问任务类型，再选范式，最后定编排--不要拿着范式当锤子，到处找钉子。</li>
+  </ul>
+
+  <div class="note">配套实践：本仓库 <strong>frontend/</strong> 提供本手册中 CoT、Self-Ask、ReAct、Plan-and-Execute、ToT、Reflexion 六种范式的可运行交互演示（另含 Role-playing 多角色协作模式）。读完理论，动手跑一遍各模式的推理过程，观察思考链、工具调用与迭代改进的真实形态。</div>
+</section>
+
+</main>
+
+<footer class="footer">
+  智能体推理范式与编排架构教学手册 · 理论篇<br>
+  配套实践：本仓库 frontend/ 提供其中 6 种范式的可运行交互演示（另含 Role-playing 多角色协作模式）
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>
